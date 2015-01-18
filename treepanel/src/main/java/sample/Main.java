@@ -1,18 +1,19 @@
-package layout;
+package sample;
 
-import sample.TreeFactory;
+import layout.LayoutAlgorithm;
+import layout.Node;
 import static layout.LayoutAlgorithm.Orientation.*;
 
 public class Main {
 
 	public static void main(String[] args) {
 		TreeFactory factory = new TreeFactory();
-		NodeClass apex = factory.sample1();
+		Node apex = factory.sample1();
 		
 		LayoutAlgorithm alg = new LayoutAlgorithm();
 		
-		alg.RootOrientation = WEST;
-		alg.POSITIONTREE(apex, 600, 450);
+		alg.rootOrientation = WEST;
+		alg.positionTree(apex);
 		
 		apex.postOrderOut();
 		

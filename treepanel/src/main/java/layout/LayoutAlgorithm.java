@@ -4,105 +4,79 @@ import static layout.LayoutAlgorithm.Orientation.*;
 
 public class LayoutAlgorithm {
 	
-	private static final int SiblingSeparation = 40;
-	private static final int SubtreeSeparation = 40;
+	private static final int SIBLING_SEPARATION = 40;
+	private static final int SUBTREE_SEPARATION = 40;
+	private static final int MAX_DEPTH = 20;
 
-	private static final int MaxDepth = 20;
-	private static final int LevelSeparation = 40;
-	
-	private NodeList LevelZeroPtr;
-
-	// A fixed distance used in the final walk of the tree to determine 
-	// the absolute x-coordinate of a node with respect to the apex node of the tree.
-	private double xTopAdjustment;
+	private static final int LEVEL_SEPARATION = 40;
 	
 	// A fixed distance used in the final walk of the tree to determine 
-	// the absolute y-coordinate of a node with respect to the apex node of the tree.
-	private double yTopAdjustment;
-	public Orientation RootOrientation = NORTH;
+	// the absolute x-coordinate and y-coordinate of a node with respect 
+	// to the apex node of the tree.
+	private double xTopAdjustment, yTopAdjustment;
 	
+	public Orientation rootOrientation = NORTH;	
 	public enum Orientation {		
 		NORTH, SOUTH, EAST, WEST
 	}
 	
-	public boolean POSITIONTREE (NodeClass Node, int width, int height){		
-		if(Node != null){
+	private NodeList levelZeroPtr;	
+	private class NodeList {
+		
+		public Node prevNode;
+		public NodeList nextLevel;
+		
+		public String toString(){
+			StringBuilder sb = new StringBuilder();
+			for(NodeList p = this; p != null; p = p.nextLevel)
+				sb.append(p.prevNode.toString() + " -> ");
+			sb.append("null");
+			return sb.toString();
+		}
+	}
+
+
+	public boolean positionTree (Node node){		
+		if(node != null){
 			// Initialize the list of previous nodes at each level.
-			INITPREVNODELIST();
+			initPrevNodeList();
 			// Do the preliminary positioning with a postorder walk.
-			FIRSTWALK(Node, 0);
+			firstWalk(node, 0);
 			// Determine how to adjust all the nodes with respect 
 			// to the location of the root.
 			
-			if (RootOrientation == null)
-				RootOrientation = NORTH;
+			if (rootOrientation == null)
+				rootOrientation = NORTH;
 			
-			switch(RootOrientation){
+			switch(rootOrientation){
 				case NORTH:
 					xTopAdjustment = 0;
 					yTopAdjustment = 0;
 					break;
 				case SOUTH:
 					xTopAdjustment = 0;
-					yTopAdjustment = DRAWINGDEPTH(Node, 0) * LevelSeparation;
+					yTopAdjustment = getDrawingDepth(node, 0) * LEVEL_SEPARATION;
 					break;
 				case EAST: 
 					xTopAdjustment = 0;
 					yTopAdjustment = 0;
 					break;
 				case WEST:
-					xTopAdjustment = DRAWINGDEPTH(Node, 0) * LevelSeparation;
+					xTopAdjustment = getDrawingDepth(node, 0) * LEVEL_SEPARATION;
 					yTopAdjustment = 0;
 					break;
 			}
 			// Do the final positioning with a preorder walk.
-			return SECONDWALK(Node, 0, 0);
+			return secondWalk(node, 0, 0);
 		}else //Trivial: return TRUE if a null pointer was passed.
-		return true;
-	}
-
-	private void FIRSTWALK(NodeClass Node, int Level) {
-		// Set the pointer to the previous node at this level.
-		Node.LEFTNEIGHBOR = GETPREVNODEATLEVEL(Level);
-		SETPREVNODEATLEVEL(Level, Node); // This is now the previous.
-		Node.MODIFIER = 0; // Set the default modifier value.
-		if (Node.ISLEAF() | Level == MaxDepth){
-			if(Node.HASLEFTSIBLING())
-				// Determine the preliminary x-coordinate based on:
-				// the preliminary x-coordinate of the left sibling,
-				// the separation between sibling nodes, and
-				// the mean size of left sibling and current node.
-				Node.PRELIM = Node.LEFTSIBLING().PRELIM + SiblingSeparation + 
-					MEANNODESIZE(Node.LEFTSIBLING(), Node);
-			else
-				// No sibling on the left to worry about.
-				Node.PRELIM = 0;
-		}else{
-			// This Node is not a leaf, so call this procedure
-			// recursively for each of its offspring.
-			NodeClass Leftmost = Node.FIRSTCHILD();
-			NodeClass Rightmost = Leftmost;
-			FIRSTWALK(Leftmost, Level + 1); 
-			while(Rightmost.HASRIGHTSIBLING()){
-				Rightmost = Rightmost.RIGHTSIBLING();
-				FIRSTWALK(Rightmost, Level + 1);
-			}
-			double Midpoint = (Leftmost.PRELIM +  Rightmost.PRELIM) / 2;
-			if (Node.HASLEFTSIBLING()){
-				Node.PRELIM = Node.LEFTSIBLING().PRELIM + SiblingSeparation +
-						MEANNODESIZE(Node.LEFTSIBLING(), Node); 
-				Node.MODIFIER = Node.PRELIM - Midpoint; 
-				APPORTION(Node, Level);
-			} else
-				Node.PRELIM = Midpoint;
-		}
+			return true;
 	}
 	
-	private int DRAWINGDEPTH(NodeClass Node, int Level){
-		int depth = Level;
-		if(Level < MaxDepth){
-			for(NodeClass child : Node.children){
-				int subtreeDepth = DRAWINGDEPTH(child, Level + 1);
+	private int getDrawingDepth(Node node, int level){
+		int depth = level;
+		if(level < MAX_DEPTH){
+			for(Node child : node.children){
+				int subtreeDepth = getDrawingDepth(child, level + 1);
 				if(subtreeDepth > depth)
 					depth = subtreeDepth;
 			}
@@ -110,150 +84,187 @@ public class LayoutAlgorithm {
 		return depth;
 	}
 
+	private void firstWalk(Node node, int level) {
+		// Set the pointer to the previous node at this level.
+		node.leftNeighbor = getPrevNodeAtLevel(level);
+		setPrevNodeAtLevel(level, node); // This is now the previous.
+		node.modifier = 0; // Set the default modifier value.
+		if (node.isLeaf() | level == MAX_DEPTH){
+			if(node.hasLeftSibling())
+				// Determine the preliminary x-coordinate based on:
+				// the preliminary x-coordinate of the left sibling,
+				// the separation between sibling nodes, and
+				// the mean size of left sibling and current node.
+				node.prelim = node.getLeftSibling().prelim + SIBLING_SEPARATION + 
+					meanNodeSize(node.getLeftSibling(), node);
+			else // No sibling on the left to worry about.
+				node.prelim = 0;
+		}else{
+			// This Node is not a leaf, so call this procedure
+			// recursively for each of its offspring.
+			Node leftmost = node.getFirstChild();
+			Node rightmost = leftmost;
+			firstWalk(leftmost, level + 1); 
+			while(rightmost.hasRightSibling()){
+				rightmost = rightmost.getRightSibling();
+				firstWalk(rightmost, level + 1);
+			}
+			double midpoint = (leftmost.prelim +  rightmost.prelim) / 2;
+			if (node.hasLeftSibling()){
+				node.prelim = node.getLeftSibling().prelim + SIBLING_SEPARATION +
+						meanNodeSize(node.getLeftSibling(), node); 
+				node.modifier = node.prelim - midpoint; 
+				apportion(node, level);
+			} else
+				node.prelim = midpoint;
+		}
+	}
 
-
-	private void APPORTION(NodeClass Node, int Level) {
-		NodeClass Leftmost = Node.FIRSTCHILD();
-		NodeClass Neighbor = Leftmost.LEFTNEIGHBOR;
-		int CompareDepth = 1;
-		int DepthToStop = MaxDepth - Level;
-		while (Leftmost != null &  Neighbor != null & CompareDepth <= DepthToStop){
-			// Compute the location of Leftmost and where it should
-			// be with respect to Neighbor.
-			double LeftModsum = 0;
-			double RightModsum = 0;
-			NodeClass AncestorLeftmost = Leftmost;
-			NodeClass AncestorNeighbor = Neighbor; 
-			for (int i = 0; i < CompareDepth; i++){
-				AncestorLeftmost = AncestorLeftmost.PARENT; 
-				AncestorNeighbor =  AncestorNeighbor.PARENT;
-				RightModsum = RightModsum + AncestorLeftmost.MODIFIER;
-				LeftModsum = LeftModsum + AncestorNeighbor.MODIFIER;
+	private void apportion(Node node, int level) {
+		Node leftmost = node.getFirstChild();
+		Node neighbor = leftmost.leftNeighbor;
+		int compareDepth = 1;
+		int depthToStop = MAX_DEPTH - level;
+		while (leftmost != null &  neighbor != null & compareDepth <= depthToStop){
+			// Compute the location of leftmost and where it should be 
+			// with respect to neighbor.
+			double leftModsum = 0;
+			double rightModsum = 0;
+			Node ancestorLeftmost = leftmost;
+			Node ancestorNeighbor = neighbor; 
+			for (int i = 0; i < compareDepth; i++){
+				ancestorLeftmost = ancestorLeftmost.parent; 
+				ancestorNeighbor =  ancestorNeighbor.parent;
+				rightModsum = rightModsum + ancestorLeftmost.modifier;
+				leftModsum = leftModsum + ancestorNeighbor.modifier;
 			}
 
-			// Find the MoveDistance, and apply it to Node's subtree.
+			// Find the moveDistance, and apply it to node's subtree.
 			// Add appropriate portions to smaller interior subtrees.
-			double MoveDistance =  (Neighbor.PRELIM + LeftModsum + SubtreeSeparation + MEANNODESIZE(Leftmost, Neighbor)) - 
-									(Leftmost.PRELIM + RightModsum);
-			if (MoveDistance > 0){
+			double moveDistance = (neighbor.prelim + leftModsum) 
+								  + SUBTREE_SEPARATION + meanNodeSize(leftmost, neighbor)
+								  - (leftmost.prelim + rightModsum);
+			if (moveDistance > 0){
+				
 				// Count interior sibling subtrees in LeftSiblings
-				NodeClass TempPtr = Node;
-				int LeftSiblings = 0; 
-				while (TempPtr != null & TempPtr != AncestorNeighbor){
-					LeftSiblings = LeftSiblings + 1;
-					TempPtr = TempPtr.LEFTSIBLING();
+				Node tempPtr = node;
+				int leftSiblings = 0; 
+				while (tempPtr != null & tempPtr != ancestorNeighbor){
+					leftSiblings = leftSiblings + 1;
+					tempPtr = tempPtr.getLeftSibling();
 				}
 
-				if(TempPtr != null){
+				if(tempPtr != null){
 					// Apply portions to appropriate left sibling subtrees.
-					double Portion = MoveDistance / LeftSiblings;
-					TempPtr = Node;
-					while(TempPtr != AncestorNeighbor){ // ??!!!!!
-						TempPtr.PRELIM = TempPtr.PRELIM + MoveDistance; 
-						TempPtr.MODIFIER = TempPtr.MODIFIER + MoveDistance;
-						MoveDistance = MoveDistance - Portion;
-						TempPtr = TempPtr.LEFTSIBLING();
+					double portion = moveDistance / leftSiblings;
+					tempPtr = node;
+					while(tempPtr != ancestorNeighbor){
+						tempPtr.prelim = tempPtr.prelim + moveDistance; 
+						tempPtr.modifier = tempPtr.modifier + moveDistance;
+						moveDistance = moveDistance - portion;
+						tempPtr = tempPtr.getLeftSibling();
 					}
 				} else 
 					// Don't need to move anything--it needs to
 					// be done by an ancestor because
-					// AncestorNeighbor and AncestorLeftmost are
+					// ancestorNeighbor and ancestorLeftmost are
 					// not siblings of each other.
 					return;
-			} // (MoveDistance > 0)
+			} // (moveDistance > 0)
 			
 			// Determine the leftmost descendant of Node at the next
 			// lower level to compare its positioning against that of
 			// its Neighbor.
-			CompareDepth = CompareDepth + 1; 
-			if (Leftmost.ISLEAF())
-				Leftmost =  GETLEFTMOST(Node, 0, CompareDepth);
+			compareDepth = compareDepth + 1; 
+			if (leftmost.isLeaf())
+				leftmost =  getLeftmost(node, 0, compareDepth);
 			else
-				Leftmost = Leftmost.FIRSTCHILD();
-			if(Leftmost != null)
-				Neighbor = Leftmost.LEFTNEIGHBOR;  // ??!!!!!
+				leftmost = leftmost.getFirstChild();
+			if(leftmost != null)
+				neighbor = leftmost.leftNeighbor;
 			else
-				Neighbor = null;
+				neighbor = null;
 		} // while
 	}
 
-	private NodeClass GETLEFTMOST(NodeClass Node, int Level, int Depth) {
-		if (Level >= Depth)
-			return Node; 
-		else if (Node.ISLEAF()) 
+	private Node getLeftmost(Node node, int level, int depth) {
+		if (level >= depth)
+			return node; 
+		else if (node.isLeaf()) 
 			return null; 
 		else {
-			NodeClass Rightmost =  Node.FIRSTCHILD();
-			NodeClass Leftmost = GETLEFTMOST (Rightmost, Level + 1, Depth);
-			// Do a postorder walk of the subtree below Node.
-			while (Leftmost == null & Rightmost.HASRIGHTSIBLING()){
-				Rightmost = Rightmost.RIGHTSIBLING();
-				Leftmost = GETLEFTMOST(Rightmost, Level + 1, Depth); 
+			Node rightmost =  node.getFirstChild();
+			Node leftmost = getLeftmost(rightmost, level + 1, depth);
+			
+			// Do a postorder walk of the subtree below node.
+			while (leftmost == null & rightmost.hasRightSibling()){
+				rightmost = rightmost.getRightSibling();
+				leftmost = getLeftmost(rightmost, level + 1, depth); 
 			}
-			return Leftmost;
+			return leftmost;
 		}
 	}
 
-	private double MEANNODESIZE(NodeClass LeftNode, NodeClass RightNode) {
-		double NodeSize = 0;
+	private double meanNodeSize(Node leftNode, Node rightNode) {
+		double nodeSize = 0;
 		
-		switch(RootOrientation){
+		switch(rootOrientation){
 			case NORTH: case SOUTH:
-				if(LeftNode != null)
-					NodeSize = NodeSize + LeftNode.RIGHTSIZE();
-				if(RightNode != null)
-					NodeSize = NodeSize + RightNode.LEFTSIZE();
+				if(leftNode != null)
+					nodeSize = nodeSize + leftNode.getRightSize();
+				if(rightNode != null)
+					nodeSize = nodeSize + rightNode.getLeftSize();
 				break;
 			case EAST: case WEST:
-				if(LeftNode != null)
-					NodeSize = NodeSize + LeftNode.TOPSIZE();
-				if(RightNode != null)
-					NodeSize = NodeSize + RightNode.BOTTOMSIZE();
+				if(leftNode != null)
+					nodeSize = nodeSize + leftNode.getTopSize();
+				if(rightNode != null)
+					nodeSize = nodeSize + rightNode.getBottomSize();
 				break;
 		}
-		return NodeSize;
+		return nodeSize;
 	}
 
-	private boolean SECONDWALK(NodeClass Node, int Level, double Modsum) {
-		boolean Result = true;
-		if (Level <= MaxDepth){
+	private boolean secondWalk(Node node, int level, double modsum) {
+		boolean result = true;
+		if (level <= MAX_DEPTH){
 
 			double xTemp = 0, yTemp = 0;			
-			switch(RootOrientation){
+			switch(rootOrientation){
 				case NORTH:
-					xTemp = xTopAdjustment + Node.PRELIM + Modsum;
-					yTemp = yTopAdjustment + (Level * LevelSeparation); break;
+					xTemp = xTopAdjustment + node.prelim + modsum;
+					yTemp = yTopAdjustment + (level * LEVEL_SEPARATION); break;
 				case SOUTH:
-					xTemp = xTopAdjustment + Node.PRELIM + Modsum;
-					yTemp = yTopAdjustment - (Level * LevelSeparation); break;
+					xTemp = xTopAdjustment + node.prelim + modsum;
+					yTemp = yTopAdjustment - (level * LEVEL_SEPARATION); break;
 				case EAST:
-					xTemp = xTopAdjustment + (Level * LevelSeparation);
-					yTemp = yTopAdjustment + Node.PRELIM + Modsum; break;
+					xTemp = xTopAdjustment + (level * LEVEL_SEPARATION);
+					yTemp = yTopAdjustment + node.prelim + modsum; break;
 				case WEST:
-					xTemp = xTopAdjustment - (Level * LevelSeparation);
-					yTemp = yTopAdjustment + Node.PRELIM + Modsum; break;
+					xTemp = xTopAdjustment - (level * LEVEL_SEPARATION);
+					yTemp = yTopAdjustment + node.prelim + modsum; break;
 			}
 			
 			// Check to see that xTemp and yTemp are of the proper
 			// size for your application.
-			if (CHECKEXTENTSRANGE(xTemp, yTemp)){
-				Node.XCOORD = xTemp;
-				Node.YCOORD = yTemp;
-				if (Node.HASCHILD())
+			if (checkExtentsRange(xTemp, yTemp)){
+				node.xCoordinate = xTemp;
+				node.yCoordinate = yTemp;
+				if (node.hasChild())
 					// Apply the Modifier value for this node to all its offspring.
-					Result = SECONDWALK (Node.FIRSTCHILD(), Level + 1, Modsum + Node.MODIFIER);
-				if (Result == true & Node.HASRIGHTSIBLING())
-					Result = SECONDWALK(Node.RIGHTSIBLING(), Level, Modsum);
+					result = secondWalk (node.getFirstChild(), level + 1, modsum + node.modifier);
+				if (result == true & node.hasRightSibling())
+					result = secondWalk(node.getRightSibling(), level, modsum);
 			}else
 				// Continuing would put the tree outside of the drawable extents range.
-				Result = false;
+				result = false;
 		} else
 			// We are at a level deeper than what we want to draw.
-			Result = true;
-		return Result;
+			result = true;
+		return result;
 	}
 
-	private boolean CHECKEXTENTSRANGE(double xValue, double yValue) {
+	private boolean checkExtentsRange(double xValue, double yValue) {
 		// xValue is a valid value for the x-coordinate
 		// yValue is a valid value for the у-coordinate
 		if(xValue >= 0 && yValue >= 0)
@@ -262,51 +273,51 @@ public class LayoutAlgorithm {
 			return false;
 	}
 
-	private void INITPREVNODELIST() {
-		LevelZeroPtr = null;
+	private void initPrevNodeList() {
+		levelZeroPtr = null;
 	}
 
-	private NodeClass GETPREVNODEATLEVEL(int Level) {
+	private Node getPrevNodeAtLevel(int level) {
 		// Start with the node at level 0--the apex of the tree.
-		NodeList TempPtr = LevelZeroPtr; 
+		NodeList tempPtr = levelZeroPtr; 
 		int i = 0;
-		while (TempPtr != null){
-			if (i == Level)
-				return TempPtr.PREVNODE;
-			TempPtr = TempPtr.NEXTLEVEL; 
+		while (tempPtr != null){
+			if (i == level)
+				return tempPtr.prevNode;
+			tempPtr = tempPtr.nextLevel; 
 			i = i + 1;
 		}
 		// Otherwise, there was no node at the specific level.
 		return null;
 	}
 
-	private void SETPREVNODEATLEVEL(int Level, NodeClass Node) {
+	private void setPrevNodeAtLevel(int level, Node node) {
 		// Start with the node at level 0-the apex of the tree.
-		NodeList TempPtr = LevelZeroPtr; 
+		NodeList tempPtr = levelZeroPtr; 
 		int i = 0;
-		while(TempPtr!= null){
-				if(i == Level){
+		while(tempPtr!= null){
+				if(i == level){
 					// At this level, replace the existing list
 					// element with the passed-in node.
-					TempPtr.PREVNODE =  Node;
+					tempPtr.prevNode =  node;
 					return;
-				}else if (TempPtr.NEXTLEVEL == null){
+				}else if (tempPtr.nextLevel == null){
 					// There isn't a list element yet at this level, so
 					// add one. The following instructions prepare the
 					// list element at the next level, not at this one.
-					NodeList NewNode = new NodeList();
-					NewNode.PREVNODE = null;
-					NewNode.NEXTLEVEL = null;
-					TempPtr.NEXTLEVEL = NewNode;
+					NodeList newNode = new NodeList();
+					newNode.prevNode = null;
+					newNode.nextLevel = null;
+					tempPtr.nextLevel = newNode;
 				}
 				//Prepare to move to the next level, to look again. 
-				TempPtr = TempPtr.NEXTLEVEL;
+				tempPtr = tempPtr.nextLevel;
 				i = i + 1;
 		}
 		// Should only get here if LevelZeroPtr is nil.
-		LevelZeroPtr = new NodeList();
-		LevelZeroPtr.PREVNODE = Node;
-		LevelZeroPtr.NEXTLEVEL = null;
+		levelZeroPtr = new NodeList();
+		levelZeroPtr.prevNode = node;
+		levelZeroPtr.nextLevel = null;
 	}
 
 }

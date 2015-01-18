@@ -6,12 +6,12 @@ import java.awt.Graphics;
 import javax.swing.JPanel;
 
 import layout.LayoutAlgorithm.Orientation;
-import layout.NodeClass;
+import layout.Node;
 
 @SuppressWarnings("serial")
 public class TreePanel extends JPanel {
 	
-	private NodeClass apex = null;
+	private Node apex = null;
 	private Orientation orientation = null;
 	
 	public TreePanel() {
@@ -19,11 +19,11 @@ public class TreePanel extends JPanel {
 		this.setBackground(Color.WHITE);
 	}
 	
-	public void paint(NodeClass apex){
+	public void paint(Node apex){
 		this.paint(apex, Orientation.NORTH);
 	}
 
-	public void paint(NodeClass apex, Orientation orientation){
+	public void paint(Node apex, Orientation orientation){
 		this.apex = apex;
 		this.orientation = orientation;
 		this.repaint();
@@ -40,17 +40,17 @@ public class TreePanel extends JPanel {
 		paintNodes(g, apex);
 	}
 
-	private void paintEdges(Graphics g, NodeClass node) {
-		int x = (int)node.XCOORD;
-		int y = (int)node.YCOORD;
-		int w = node.NODE_WIDTH;
-		int h = node.NODE_HEIGHT;
+	private void paintEdges(Graphics g, Node node) {
+		int x = (int)node.xCoordinate;
+		int y = (int)node.yCoordinate;
+		int w = node.getWidth();
+		int h = node.getHeight();
 		
-		for(NodeClass child : node.children){
-			int xc = (int)child.XCOORD;
-			int yc = (int)child.YCOORD;
-			int wc = child.NODE_WIDTH;
-			int hc = child.NODE_HEIGHT;
+		for(Node child : node.children){
+			int xc = (int)child.xCoordinate;
+			int yc = (int)child.yCoordinate;
+			int wc = child.getWidth();
+			int hc = child.getHeight();
 			
 			int xs = 0, ys = 0, xe = 0, ye = 0;
 			
@@ -85,14 +85,14 @@ public class TreePanel extends JPanel {
 			g.drawLine(xs, ys, xe, ye);
 		}
 		
-		for(NodeClass child : node.children)
+		for(Node child : node.children)
 			paintEdges(g, child);
 	}
 
-	private void paintNodes(Graphics g, NodeClass node) {
-		g.drawRect((int)node.XCOORD, (int)node.YCOORD, node.NODE_WIDTH, node.NODE_HEIGHT);
-		g.drawString(node.data, (int)node.XCOORD + 2, (int)node.YCOORD + 15);
-		for(NodeClass child : node.children)
+	private void paintNodes(Graphics g, Node node) {
+		g.drawRect((int)node.xCoordinate, (int)node.yCoordinate, node.getWidth(), node.getHeight());
+		g.drawString(node.data, (int)node.xCoordinate + 2, (int)node.yCoordinate + 15);
+		for(Node child : node.children)
 			paintNodes(g, child);
 	}
 

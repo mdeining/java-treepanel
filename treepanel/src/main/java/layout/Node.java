@@ -3,25 +3,25 @@ package layout;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NodeClass {
+public class Node {
 	
 	public static final int NODE_WIDTH = 20, NODE_HEIGHT = 20;
 	
-	public List<NodeClass> children = new ArrayList<>();;
+	public List<Node> children = new ArrayList<>();
 	public String data;
 
-	public NodeClass PARENT, LEFTNEIGHBOR;	
-	public double XCOORD, YCOORD, PRELIM, MODIFIER;
+	protected Node parent, leftNeighbor;	
+	public double xCoordinate, yCoordinate, prelim, modifier;
 	
-	public NodeClass(String data) {
+	public Node(String data) {
 		super();
 		this.data = data;
 	}
 	
-	public void add(NodeClass ... children){
-		for(NodeClass child : children){
+	public void add(Node ... children){
+		for(Node child : children){
 			this.children.add(child);
-			child.PARENT = this;
+			child.parent = this;
 		}
 	}
 
@@ -44,23 +44,23 @@ public class NodeClass {
 	
 	@Override
 	public String toString() {
-		return "Node[" + data + ", " + PRELIM + " + " + MODIFIER + " ->\t" + XCOORD + "|" + YCOORD + "]";
+		return "Node[" + data + ", " + prelim + " + " + modifier + " ->\t" + xCoordinate + "|" + yCoordinate + "]";
 	}
 	
 	public void postOrderOut(){
 		this.postOrderOut(this);
 	}
 
-	private void postOrderOut(NodeClass node){
+	private void postOrderOut(Node node){
 		if(node == null)
 			return;
-		for(NodeClass child : node.children)
+		for(Node child : node.children)
 			postOrderOut(child);
 		System.out.println(node.toString());
 	}
 
 	// 	The current node's leftmost offspring
-	public NodeClass FIRSTCHILD(){
+	public Node getFirstChild(){
 		if(children.isEmpty())
 			return null;
 		else
@@ -68,57 +68,65 @@ public class NodeClass {
 	}
 	
 	// The current node's closest sibling node on the left	
-	public NodeClass LEFTSIBLING(){
-		if(PARENT == null) // apex
+	public Node getLeftSibling(){
+		if(parent == null) // apex
 			return null;
-		for(int i = 1; i < PARENT.children.size(); i++)
-			if(PARENT.children.get(i) == this)
-				return PARENT.children.get(i - 1);		
+		for(int i = 1; i < parent.children.size(); i++)
+			if(parent.children.get(i) == this)
+				return parent.children.get(i - 1);		
 		return null;		
 	}
 	
 	// 	The current node's closest sibling node on the right
-	public NodeClass RIGHTSIBLING(){
-		if(PARENT == null)
+	public Node getRightSibling(){
+		if(parent == null)
 			return null;
-		for(int i = 0; i < PARENT.children.size() - 1; i++)
-			if(PARENT.children.get(i) == this)
-				return PARENT.children.get(i + 1);		
+		for(int i = 0; i < parent.children.size() - 1; i++)
+			if(parent.children.get(i) == this)
+				return parent.children.get(i + 1);		
 		return null;		
 	}
 
-	public boolean HASRIGHTSIBLING() {
-		return this.RIGHTSIBLING() != null;
+	public boolean hasRightSibling() {
+		return this.getRightSibling() != null;
 	}
 
-	public boolean HASLEFTSIBLING() {
-		return this.LEFTSIBLING() != null;
+	public boolean hasLeftSibling() {
+		return this.getLeftSibling() != null;
 	}
 
-	public boolean ISLEAF() {
+	public boolean isLeaf() {
 		return children.isEmpty();
 	}
 
+	public boolean hasChild() {
+		return !this.isLeaf();
+	}
+
 	// Size of the right half of the node
-	public double RIGHTSIZE() {
+	public double getRightSize() {
 		return NODE_WIDTH / 2.0;
 	}
 
 	// Size of the left half of the node
-	public double LEFTSIZE() {
+	public double getLeftSize() {
 		return NODE_WIDTH / 2.0;
 	}
 	
-	public double TOPSIZE() {
+	public double getTopSize() {
 		return NODE_HEIGHT / 2.0;
 	}
 	
-	public double BOTTOMSIZE() {
+	public double getBottomSize() {
 		return NODE_HEIGHT / 2.0;
 	}
 	
-	public boolean HASCHILD() {
-		return !this.ISLEAF();
+	public int getHeight() {
+		return NODE_HEIGHT;
+	}
+
+	public int getWidth() {
+		return NODE_WIDTH;
 	}
 
 //	// The current node's x-coordinate

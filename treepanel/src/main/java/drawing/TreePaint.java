@@ -13,8 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 import layout.LayoutAlgorithm;
-import layout.LayoutAlgorithm.Orientation;
-import layout.NodeClass;
+import layout.Node;
 import sample.TreeFactory;
 
 @SuppressWarnings("serial")
@@ -88,20 +87,20 @@ public class TreePaint extends JFrame {
 	
 	private void sample(){
 		TreeFactory factory = new TreeFactory();
-		NodeClass apex = factory.sample1();
+		Node apex = factory.sample1();
 		
 		LayoutAlgorithm alg = new LayoutAlgorithm();
 		if(northRb.isSelected())
-			alg.RootOrientation = NORTH;
+			alg.rootOrientation = NORTH;
 		else if(southRb.isSelected())
-			alg.RootOrientation = SOUTH;
+			alg.rootOrientation = SOUTH;
 		else if(eastRb.isSelected())
-			alg.RootOrientation = EAST;
+			alg.rootOrientation = EAST;
 		else if(westRb.isSelected())
-			alg.RootOrientation = WEST;
-		alg.POSITIONTREE(apex, treePanel.getWidth(), treePanel.getHeight());
+			alg.rootOrientation = WEST;
+		alg.positionTree(apex);
 		
-		treePanel.paint(apex, alg.RootOrientation);
+		treePanel.paint(apex, alg.rootOrientation);
 
 	}
 	
@@ -121,7 +120,7 @@ public class TreePaint extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				treePanel.paint((NodeClass)null);
+				treePanel.paint((Node)null);
 				orientationGroup.clearSelection();
 			}			
 		});
