@@ -1,6 +1,7 @@
 package layout;
 
 import sample.TreeFactory;
+import static layout.LayoutAlgorithm.Orientation.*;
 
 public class Main {
 
@@ -10,7 +11,8 @@ public class Main {
 		
 		LayoutAlgorithm alg = new LayoutAlgorithm();
 		
-		alg.POSITIONTREE(apex);
+		alg.RootOrientation = WEST;
+		alg.POSITIONTREE(apex, 600, 450);
 		
 		apex.postOrderOut();
 		

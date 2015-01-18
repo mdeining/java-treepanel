@@ -38,23 +38,23 @@ public class TreeTest {
 	@Test
 	public void test1(){
 		LayoutAlgorithm alg = new LayoutAlgorithm();
-		alg.POSITIONTREE(o);
+		alg.POSITIONTREE(o, 100, 100);
 		
 		assertEquals(0, a.PRELIM, 0);	assertEquals(0, a.MODIFIER, 0);	assertEquals(0, a.XCOORD, 0);
-		assertEquals(0, b.PRELIM, 0);	assertEquals(0, b.MODIFIER, 0);	assertEquals(3, b.XCOORD, 0);
-		assertEquals(6, c.PRELIM, 0);	assertEquals(0, c.MODIFIER, 0);	assertEquals(9, c.XCOORD, 0);
-		assertEquals(6, d.PRELIM, 0);	assertEquals(3, d.MODIFIER, 0);	assertEquals(6, d.XCOORD, 0);
-		assertEquals(3, e.PRELIM, 0);	assertEquals(0, e.MODIFIER, 0);	assertEquals(3, e.XCOORD, 0);
-		assertEquals(13.5, f.PRELIM, 0);	assertEquals(4.5, f.MODIFIER, 0);	assertEquals(13.5, f.XCOORD, 0);
-		assertEquals(0, g.PRELIM, 0);	assertEquals(0, g.MODIFIER, 0);	assertEquals(21, g.XCOORD, 0);
-		assertEquals(0, h.PRELIM, 0);	assertEquals(0, h.MODIFIER, 0);	assertEquals(15, h.XCOORD, 0);
-		assertEquals(6, i.PRELIM, 0);	assertEquals(0, i.MODIFIER, 0);	assertEquals(21, i.XCOORD, 0);
-		assertEquals(12, j.PRELIM, 0);	assertEquals(0, j.MODIFIER, 0);	assertEquals(27, j.XCOORD, 0);
-		assertEquals(18, k.PRELIM, 0);	assertEquals(0, k.MODIFIER, 0);	assertEquals(33, k.XCOORD, 0);
-		assertEquals(24, l.PRELIM, 0);	assertEquals(0, l.MODIFIER, 0);	assertEquals(39, l.XCOORD, 0);
-		assertEquals(6, m.PRELIM, 0);	assertEquals(-6, m.MODIFIER, 0);	assertEquals(27, m.XCOORD, 0);
-		assertEquals(24, n.PRELIM, 0);	assertEquals(21, n.MODIFIER, 0);	assertEquals(24, n.XCOORD, 0);
-		assertEquals(13.5, o.PRELIM, 0);	assertEquals(0, o.MODIFIER, 0);	assertEquals(13.5, o.XCOORD, 0);
+		assertEquals(0, b.PRELIM, 0);	assertEquals(0, b.MODIFIER, 0);	assertEquals(30, b.XCOORD, 0);
+		assertEquals(60, c.PRELIM, 0);	assertEquals(0, c.MODIFIER, 0);	assertEquals(90, c.XCOORD, 0);
+		assertEquals(60, d.PRELIM, 0);	assertEquals(30, d.MODIFIER, 0);	assertEquals(60, d.XCOORD, 0);
+		assertEquals(30, e.PRELIM, 0);	assertEquals(0, e.MODIFIER, 0);	assertEquals(30, e.XCOORD, 0);
+		assertEquals(135, f.PRELIM, 0);	assertEquals(45, f.MODIFIER, 0);	assertEquals(135, f.XCOORD, 0);
+		assertEquals(0, g.PRELIM, 0);	assertEquals(0, g.MODIFIER, 0);	assertEquals(210, g.XCOORD, 0);
+		assertEquals(0, h.PRELIM, 0);	assertEquals(0, h.MODIFIER, 0);	assertEquals(150, h.XCOORD, 0);
+		assertEquals(60, i.PRELIM, 0);	assertEquals(0, i.MODIFIER, 0);	assertEquals(210, i.XCOORD, 0);
+		assertEquals(120, j.PRELIM, 0);	assertEquals(0, j.MODIFIER, 0);	assertEquals(270, j.XCOORD, 0);
+		assertEquals(180, k.PRELIM, 0);	assertEquals(0, k.MODIFIER, 0);	assertEquals(330, k.XCOORD, 0);
+		assertEquals(240, l.PRELIM, 0);	assertEquals(0, l.MODIFIER, 0);	assertEquals(390, l.XCOORD, 0);
+		assertEquals(60, m.PRELIM, 0);	assertEquals(-60, m.MODIFIER, 0);	assertEquals(270, m.XCOORD, 0);
+		assertEquals(240, n.PRELIM, 0);	assertEquals(210, n.MODIFIER, 0);	assertEquals(240, n.XCOORD, 0);
+		assertEquals(135, o.PRELIM, 0);	assertEquals(0, o.MODIFIER, 0);	assertEquals(135, o.XCOORD, 0);
 
 		
 	}

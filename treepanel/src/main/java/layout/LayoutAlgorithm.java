@@ -1,12 +1,14 @@
 package layout;
 
+import static layout.LayoutAlgorithm.Orientation.*;
+
 public class LayoutAlgorithm {
 	
-	private static final int SiblingSeparation = 4;
-	private static final int SubtreeSeparation = 4;
+	private static final int SiblingSeparation = 40;
+	private static final int SubtreeSeparation = 40;
 
 	private static final int MaxDepth = 20;
-	private static final int LevelSeparation = 4;
+	private static final int LevelSeparation = 40;
 	
 	private NodeList LevelZeroPtr;
 
@@ -17,8 +19,13 @@ public class LayoutAlgorithm {
 	// A fixed distance used in the final walk of the tree to determine 
 	// the absolute y-coordinate of a node with respect to the apex node of the tree.
 	private double yTopAdjustment;
-
-	public boolean POSITIONTREE (NodeClass Node){		
+	public Orientation RootOrientation = NORTH;
+	
+	public enum Orientation {		
+		NORTH, SOUTH, EAST, WEST
+	}
+	
+	public boolean POSITIONTREE (NodeClass Node, int width, int height){		
 		if(Node != null){
 			// Initialize the list of previous nodes at each level.
 			INITPREVNODELIST();
@@ -26,15 +33,35 @@ public class LayoutAlgorithm {
 			FIRSTWALK(Node, 0);
 			// Determine how to adjust all the nodes with respect 
 			// to the location of the root.
-			xTopAdjustment = Node.XCOORD; // - Node.PRELIM;
-			yTopAdjustment = Node.YCOORD;
+			
+			if (RootOrientation == null)
+				RootOrientation = NORTH;
+			
+			switch(RootOrientation){
+				case NORTH:
+					xTopAdjustment = 0;
+					yTopAdjustment = 0;
+					break;
+				case SOUTH:
+					xTopAdjustment = 0;
+					yTopAdjustment = DRAWINGDEPTH(Node, 0) * LevelSeparation;
+					break;
+				case EAST: 
+					xTopAdjustment = 0;
+					yTopAdjustment = 0;
+					break;
+				case WEST:
+					xTopAdjustment = DRAWINGDEPTH(Node, 0) * LevelSeparation;
+					yTopAdjustment = 0;
+					break;
+			}
 			// Do the final positioning with a preorder walk.
 			return SECONDWALK(Node, 0, 0);
 		}else //Trivial: return TRUE if a null pointer was passed.
 		return true;
 	}
 
-	public void FIRSTWALK(NodeClass Node, int Level) {
+	private void FIRSTWALK(NodeClass Node, int Level) {
 		// Set the pointer to the previous node at this level.
 		Node.LEFTNEIGHBOR = GETPREVNODEATLEVEL(Level);
 		SETPREVNODEATLEVEL(Level, Node); // This is now the previous.
@@ -70,8 +97,22 @@ public class LayoutAlgorithm {
 				Node.PRELIM = Midpoint;
 		}
 	}
+	
+	private int DRAWINGDEPTH(NodeClass Node, int Level){
+		int depth = Level;
+		if(Level < MaxDepth){
+			for(NodeClass child : Node.children){
+				int subtreeDepth = DRAWINGDEPTH(child, Level + 1);
+				if(subtreeDepth > depth)
+					depth = subtreeDepth;
+			}
+		}
+		return depth;
+	}
 
-	public void APPORTION(NodeClass Node, int Level) {
+
+
+	private void APPORTION(NodeClass Node, int Level) {
 		NodeClass Leftmost = Node.FIRSTCHILD();
 		NodeClass Neighbor = Leftmost.LEFTNEIGHBOR;
 		int CompareDepth = 1;
@@ -156,18 +197,43 @@ public class LayoutAlgorithm {
 	private double MEANNODESIZE(NodeClass LeftNode, NodeClass RightNode) {
 		double NodeSize = 0;
 		
-		if(LeftNode != null)
-			NodeSize = NodeSize + LeftNode.RIGHTSIZE();
-		if(RightNode != null)
-			NodeSize = NodeSize + RightNode.LEFTSIZE();
+		switch(RootOrientation){
+			case NORTH: case SOUTH:
+				if(LeftNode != null)
+					NodeSize = NodeSize + LeftNode.RIGHTSIZE();
+				if(RightNode != null)
+					NodeSize = NodeSize + RightNode.LEFTSIZE();
+				break;
+			case EAST: case WEST:
+				if(LeftNode != null)
+					NodeSize = NodeSize + LeftNode.TOPSIZE();
+				if(RightNode != null)
+					NodeSize = NodeSize + RightNode.BOTTOMSIZE();
+				break;
+		}
 		return NodeSize;
 	}
 
 	private boolean SECONDWALK(NodeClass Node, int Level, double Modsum) {
 		boolean Result = true;
 		if (Level <= MaxDepth){
-			double xTemp = xTopAdjustment + Node.PRELIM + Modsum;
-			double yTemp = yTopAdjustment + (Level * LevelSeparation);
+
+			double xTemp = 0, yTemp = 0;			
+			switch(RootOrientation){
+				case NORTH:
+					xTemp = xTopAdjustment + Node.PRELIM + Modsum;
+					yTemp = yTopAdjustment + (Level * LevelSeparation); break;
+				case SOUTH:
+					xTemp = xTopAdjustment + Node.PRELIM + Modsum;
+					yTemp = yTopAdjustment - (Level * LevelSeparation); break;
+				case EAST:
+					xTemp = xTopAdjustment + (Level * LevelSeparation);
+					yTemp = yTopAdjustment + Node.PRELIM + Modsum; break;
+				case WEST:
+					xTemp = xTopAdjustment - (Level * LevelSeparation);
+					yTemp = yTopAdjustment + Node.PRELIM + Modsum; break;
+			}
+			
 			// Check to see that xTemp and yTemp are of the proper
 			// size for your application.
 			if (CHECKEXTENTSRANGE(xTemp, yTemp)){
@@ -177,7 +243,7 @@ public class LayoutAlgorithm {
 					// Apply the Modifier value for this node to all its offspring.
 					Result = SECONDWALK (Node.FIRSTCHILD(), Level + 1, Modsum + Node.MODIFIER);
 				if (Result == true & Node.HASRIGHTSIBLING())
-					Result = SECONDWALK(Node.RIGHTSIBLING(), Level + 1, Modsum);
+					Result = SECONDWALK(Node.RIGHTSIBLING(), Level, Modsum);
 			}else
 				// Continuing would put the tree outside of the drawable extents range.
 				Result = false;
@@ -196,7 +262,7 @@ public class LayoutAlgorithm {
 			return false;
 	}
 
-	public void INITPREVNODELIST() {
+	private void INITPREVNODELIST() {
 		LevelZeroPtr = null;
 	}
 

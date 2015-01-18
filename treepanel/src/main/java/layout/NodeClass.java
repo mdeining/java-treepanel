@@ -5,10 +5,10 @@ import java.util.List;
 
 public class NodeClass {
 	
-	public static final int NODE_WIDTH = 2;
+	public static final int NODE_WIDTH = 20, NODE_HEIGHT = 20;
 	
-	private List<NodeClass> children = new ArrayList<>();;
-	private String data;
+	public List<NodeClass> children = new ArrayList<>();;
+	public String data;
 
 	public NodeClass PARENT, LEFTNEIGHBOR;	
 	public double XCOORD, YCOORD, PRELIM, MODIFIER;
@@ -44,7 +44,7 @@ public class NodeClass {
 	
 	@Override
 	public String toString() {
-		return "Node[" + data + ", " + PRELIM + ", " + MODIFIER + ", " + XCOORD + "]";
+		return "Node[" + data + ", " + PRELIM + " + " + MODIFIER + " ->\t" + XCOORD + "|" + YCOORD + "]";
 	}
 	
 	public void postOrderOut(){
@@ -108,7 +108,15 @@ public class NodeClass {
 	public double LEFTSIZE() {
 		return NODE_WIDTH / 2.0;
 	}
-
+	
+	public double TOPSIZE() {
+		return NODE_HEIGHT / 2.0;
+	}
+	
+	public double BOTTOMSIZE() {
+		return NODE_HEIGHT / 2.0;
+	}
+	
 	public boolean HASCHILD() {
 		return !this.ISLEAF();
 	}
