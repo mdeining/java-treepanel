@@ -10,57 +10,62 @@ public class Settings {
 
 	private static final Orientation DEFAULT_ORIENTATION = Orientation.NORTH;
 
-	private int maxDepth, siblingSeparation, subtreeSeparation, levelSepartion;
-	private Orientation rootOrientation;
-
-	public Settings(int maxDepth, int siblingSeparation, int subtreeSeparation,
-			int levelSepartion, Orientation rootOrientation) {
+	private int maxDepth = DEFAULT_MAX_DEPTH, 
+			siblingSeparation = DEFAULT_SIBLING_SEPARATION, 
+			subtreeSeparation = DEFAULT_SUBTREE_SEPARATION, 
+			levelSepartion = DEFAULT_LEVEL_SEPARATION;
+	private Orientation rootOrientation = DEFAULT_ORIENTATION;
+	
+	protected Settings(){
 		super();
-		this.maxDepth = maxDepth;
-		this.siblingSeparation = siblingSeparation;
-		this.subtreeSeparation = subtreeSeparation;
-		this.levelSepartion = levelSepartion;
-		this.rootOrientation = rootOrientation;
-	}
-	
-	public Settings(int siblingSeparation, int subtreeSeparation,
-			int levelSepartion, Orientation rootOrientation) {
-		this(DEFAULT_MAX_DEPTH, siblingSeparation, subtreeSeparation, levelSepartion, rootOrientation);
-	}
-	
-	public Settings(int siblingSeparation, int subtreeSeparation, int levelSepartion) {
-		this(DEFAULT_MAX_DEPTH, siblingSeparation, subtreeSeparation, levelSepartion, DEFAULT_ORIENTATION);
-	}
-	
-	public Settings() {
-		this(DEFAULT_MAX_DEPTH, DEFAULT_SIBLING_SEPARATION, DEFAULT_SUBTREE_SEPARATION, DEFAULT_LEVEL_SEPARATION, DEFAULT_ORIENTATION);
 	}
 
-	public int getMaxDepth() {
+
+	protected int getMaxDepth() {
 		return maxDepth;
 	}
 
-	public int getSiblingSeparation() {
+	protected void setMaxDepth(int maxDepth) {
+		this.maxDepth = maxDepth;
+	}
+
+	protected int getSiblingSeparation() {
 		return siblingSeparation;
 	}
 
-	public int getSubtreeSeparation() {
+	protected void setSiblingSeparation(int siblingSeparation) {
+		this.siblingSeparation = siblingSeparation;
+	}
+
+	protected int getSubtreeSeparation() {
 		return subtreeSeparation;
 	}
 
-	public int getLevelSepartion() {
+	protected void setSubtreeSeparation(int subtreeSeparation) {
+		this.subtreeSeparation = subtreeSeparation;
+	}
+
+	protected int getLevelSepartion() {
 		return levelSepartion;
 	}
 
-	public Orientation getRootOrientation() {
+	protected void setLevelSepartion(int levelSepartion) {
+		this.levelSepartion = levelSepartion;
+	}
+
+	protected Orientation getRootOrientation() {
 		return rootOrientation;
 	}
-	
-	public boolean hasVericalOrientation(){
+
+	protected void setRootOrientation(Orientation rootOrientation) {
+		this.rootOrientation = rootOrientation;
+	}
+
+	protected boolean hasVerticalOrientation(){
 		return rootOrientation == Orientation.NORTH || rootOrientation == Orientation.SOUTH;
 	}
 	
-	public boolean hasHorizontalOrientation(){
+	protected boolean hasHorizontalOrientation(){
 		return rootOrientation == Orientation.EAST || rootOrientation == Orientation.WEST;
 	}
 

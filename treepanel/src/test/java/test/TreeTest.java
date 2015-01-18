@@ -1,44 +1,44 @@
 package test;
 
+import static org.junit.Assert.assertEquals;
+import layout.Child;
+import layout.Node;
+import layout.Root;
+
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-import layout.LayoutAlgorithm;
-import layout.Node;
-
 public class TreeTest {
 	
-	Node a, b, c, d, e, f, g, h, i, j, k, l, m, n, o;
+	Node a, b, c, d, e, f, g, h, i, j, k, l, m, n;
+	Root o;
 	
 	@Before
 	public void sample(){
-		a = new Node("A");
-		b = new Node("B");
-		c = new Node("C");
-		d = new Node("D");
-		e = new Node("E");
-		f = new Node("F");
-		g = new Node("G");
-		h = new Node("H");
-		i = new Node("I");
-		j = new Node("J");
-		k = new Node("K");
-		l = new Node("L");
-		m = new Node("M");
-		n = new Node("N");
-		o = new Node("O");
+	}
+	
+	@Test
+	public void test1(){
+		a = new Child("A");
+		b = new Child("B");
+		c = new Child("C");
+		d = new Child("D");
+		e = new Child("E");
+		f = new Child("F");
+		g = new Child("G");
+		h = new Child("H");
+		i = new Child("I");
+		j = new Child("J");
+		k = new Child("K");
+		l = new Child("L");
+		m = new Child("M");
+		n = new Child("N");
+		o = new Root("O");
 		o.add(e, f, n);
 		e.add(a, d);
 		d.add(b, c);
 		n.add(g, m);
 		m.add(h, i, j, k, l);		
-	}
-	
-	@Test
-	public void test1(){
-		LayoutAlgorithm algorithm = new LayoutAlgorithm();
-		algorithm.positionTree(null, o);
 		
 		assertEquals(0, a.getPrelim());		assertEquals(0, a.getModifier());	assertEquals(0, a.getX());
 		assertEquals(0, b.getPrelim());		assertEquals(0, b.getModifier());	assertEquals(30, b.getX());

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class Node implements Iterable<Node> {
+public abstract class Node implements Iterable<Node> {
 	
 	public static final int NODE_WIDTH = 20, NODE_HEIGHT = 20;
 	
@@ -44,27 +44,31 @@ public class Node implements Iterable<Node> {
 			this.children.add(child);
 			child.parent = this;
 		}
+		this.update();
 	}
 
 	public String toString() {
 		return "Node[" + data + ", " + prelim + " + " + modifier + " ->\t" + xCoordinate + "|" + yCoordinate + "]";
 	}
 	
-	public void printPostOrder(){
-		this.printPostOrder(this);
-	}
-
 	@Override
 	public Iterator<Node> iterator() {
 		return children.iterator();
 	}
-
-	private void printPostOrder(Node node){
-		if(node == null)
-			return;
-		for(Node child : node.children)
-			printPostOrder(child);
-		System.out.println(node.toString());
+	
+	protected void initialize(){
+		leftNeighbor = null;
+		prelim = 0;
+		modifier = 0;
+		xCoordinate = 0;
+		yCoordinate = 0;
+		
+		for(Node child : children)
+			child.initialize();
+	}
+	
+	protected void update(){
+		parent.update();
 	}
 
 	// 	The current node's leftmost offspring
@@ -135,5 +139,25 @@ public class Node implements Iterable<Node> {
 
 	public int getWidth() {
 		return NODE_WIDTH;
+	}
+	
+	public int getDrawingWidth(){
+		int width = this.getX() + this.getWidth();
+		for(Node child : children){
+			int childWidth = child.getDrawingWidth();
+			if(childWidth > width)
+				width = childWidth;
+		}
+		return width;
+	}
+
+	public int getDrawingHeight(){
+		int height = this.getY() + this.getHeight();
+		for(Node child : children){
+			int childHeight = child.getDrawingHeight();
+			if(childHeight > height)
+				height = childHeight;
+		}
+		return height;
 	}
 }

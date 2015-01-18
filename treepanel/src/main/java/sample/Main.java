@@ -1,19 +1,17 @@
 package sample;
 
-import layout.LayoutAlgorithm;
-import layout.Node;
+import layout.Root;
 
 public class Main {
 
 	public static void main(String[] args) {
 		TreeFactory factory = new TreeFactory();
-		Node apex = factory.sample1();
+		Root root = factory.sample1();
 		
-		LayoutAlgorithm algorithm = new LayoutAlgorithm();
+		root.printPostOrder();
 		
-		algorithm.positionTree(null, apex);
-		
-		apex.printPostOrder();
+		System.out.println(root.getDrawingWidth());
+		System.out.println(root.getDrawingHeight());
 		
 	}
 

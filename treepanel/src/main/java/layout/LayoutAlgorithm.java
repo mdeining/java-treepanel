@@ -15,12 +15,15 @@ public class LayoutAlgorithm {
 	// A list of previous nodes at each level.
 	private Map<Integer, Node> previousNodes = new HashMap<>();
 	
-	public boolean positionTree (Settings settings, Node root){
-		if(settings == null || root == null)
+	protected boolean positionTree (Settings settings, Root root){
+		if(settings == null)
+			throw new NullPointerException("Settings");
+		if(root == null)
 			return true;
 
 		this.settings = settings;
 		previousNodes.clear();
+		root.initialize();
 		preliminaryPositioning(root, 0);
 		
 		// Determine how to adjust all the nodes with respect 
@@ -62,7 +65,6 @@ public class LayoutAlgorithm {
 		// Set the pointer to the previous node at this level.
 		node.leftNeighbor = previousNodes.get(level);
 		previousNodes.put(level, node);
-		node.modifier = 0; // Set the default modifier value.
 		if (node.isLeaf() || level == settings.getMaxDepth()){
 			if(node.hasLeftSibling())
 				// Determine the preliminary x-coordinate based on:
