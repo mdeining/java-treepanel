@@ -1,7 +1,7 @@
 package drawing;
 
+import static layout.Alignment.*;
 import static layout.Orientation.*;
-import static drawing.Alignment.*;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -98,7 +98,7 @@ public class TreePaint extends JFrame {
 		
 		verticalGroup = new ButtonGroup();
 		leftRb.setSelected(true);
-		treePanel.setVerticalAlignment(TOP);;
+		root.setVerticalAlignment(TOP);;
 		verticalGroup.add(topRb);
 		verticalGroup.add(vrootRb);
 		verticalGroup.add(vtreeRb);
@@ -106,7 +106,7 @@ public class TreePaint extends JFrame {
 		
 		horizontalGroup = new ButtonGroup();
 		topRb.setSelected(true);
-		treePanel.setHorizontalAlignment(LEFT);
+		root.setHorizontalAlignment(LEFT);
 		horizontalGroup.add(leftRb);
 		horizontalGroup.add(hrootRb);
 		horizontalGroup.add(htreeRb);
@@ -187,13 +187,13 @@ public class TreePaint extends JFrame {
 		ActionListener horizontalRbListener = new ActionListener(){
 			@Override public void actionPerformed(ActionEvent e) { 
 				if(leftRb.isSelected())
-					treePanel.setHorizontalAlignment(LEFT);
+					root.setHorizontalAlignment(LEFT);
 				else if(htreeRb.isSelected())
-					treePanel.setHorizontalAlignment(TREE_CENTER);
+					root.setHorizontalAlignment(TREE_CENTER);
 				else if(hrootRb.isSelected())
-					treePanel.setHorizontalAlignment(ROOT_CENTER);
+					root.setHorizontalAlignment(ROOT_CENTER);
 				else if(rightRb.isSelected())
-					treePanel.setHorizontalAlignment(RIGHT);
+					root.setHorizontalAlignment(RIGHT);
 				treePanel.repaint();
 			}			
 		};
@@ -208,13 +208,13 @@ public class TreePaint extends JFrame {
 		ActionListener verticalbListener = new ActionListener(){
 			@Override public void actionPerformed(ActionEvent e) { 
 				if(topRb.isSelected())
-					treePanel.setVerticalAlignment(TOP);
+					root.setVerticalAlignment(TOP);
 				else if(vtreeRb.isSelected())
-					treePanel.setVerticalAlignment(TREE_CENTER);
+					root.setVerticalAlignment(TREE_CENTER);
 				else if(vrootRb.isSelected())
-					treePanel.setVerticalAlignment(ROOT_CENTER);
+					root.setVerticalAlignment(ROOT_CENTER);
 				else if(bottomRb.isSelected())
-					treePanel.setVerticalAlignment(BOTTOM);				
+					root.setVerticalAlignment(BOTTOM);				
 				treePanel.repaint();
 			}			
 		};

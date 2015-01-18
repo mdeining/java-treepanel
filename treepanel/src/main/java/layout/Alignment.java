@@ -1,4 +1,4 @@
-package drawing;
+package layout;
 
 public enum Alignment {
 

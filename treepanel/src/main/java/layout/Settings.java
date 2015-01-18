@@ -9,12 +9,17 @@ public class Settings {
 	private static final int DEFAULT_LEVEL_SEPARATION = 40;
 
 	private static final Orientation DEFAULT_ORIENTATION = Orientation.NORTH;
+	
+	private static final Alignment DEFAULT_HORIZONTAL_ALIGNMENT = Alignment.LEFT;
+	private static final Alignment DEFAULT_VERTICAL_ALIGNMENT = Alignment.TOP;
 
 	private int maxDepth = DEFAULT_MAX_DEPTH, 
 			siblingSeparation = DEFAULT_SIBLING_SEPARATION, 
 			subtreeSeparation = DEFAULT_SUBTREE_SEPARATION, 
 			levelSepartion = DEFAULT_LEVEL_SEPARATION;
 	private Orientation rootOrientation = DEFAULT_ORIENTATION;
+	private Alignment horizontalAlignment = DEFAULT_HORIZONTAL_ALIGNMENT, 
+			verticalAlignment = DEFAULT_VERTICAL_ALIGNMENT;	
 	
 	protected Settings(){
 		super();
@@ -69,4 +74,19 @@ public class Settings {
 		return rootOrientation == Orientation.EAST || rootOrientation == Orientation.WEST;
 	}
 
+	protected Alignment getHorizontalAlignment() {
+		return horizontalAlignment;
+	}
+
+	protected void setHorizontalAlignment(Alignment horizontalAlignment) {
+		this.horizontalAlignment = horizontalAlignment;
+	}
+
+	protected Alignment getVerticalAlignment() {
+		return verticalAlignment;
+	}
+
+	protected void setVerticalAlignment(Alignment verticalAlignment) {
+		this.verticalAlignment = verticalAlignment;
+	}
 }

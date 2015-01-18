@@ -141,7 +141,7 @@ public abstract class Node implements Iterable<Node> {
 		return NODE_WIDTH;
 	}
 	
-	public int getDrawingWidth(){
+	protected int getDrawingWidth(){
 		int width = this.getX() + this.getWidth();
 		for(Node child : children){
 			int childWidth = child.getDrawingWidth();
@@ -151,7 +151,7 @@ public abstract class Node implements Iterable<Node> {
 		return width;
 	}
 
-	public int getDrawingHeight(){
+	protected int getDrawingHeight(){
 		int height = this.getY() + this.getHeight();
 		for(Node child : children){
 			int childHeight = child.getDrawingHeight();

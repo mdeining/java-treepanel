@@ -9,10 +9,6 @@ public class Main {
 		Root root = factory.sample1();
 		
 		root.printPostOrder();
-		
-		System.out.println(root.getDrawingWidth());
-		System.out.println(root.getDrawingHeight());
-		
 	}
 
 }

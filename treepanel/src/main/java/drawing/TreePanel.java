@@ -11,7 +11,6 @@ import layout.Root;
 @SuppressWarnings("serial")
 public class TreePanel extends JPanel {
 	
-	private Alignment horizontalAlignment, verticalAlignment;	
 	private Root root;
 
 	public TreePanel() {
@@ -22,14 +21,6 @@ public class TreePanel extends JPanel {
 	public void clear() {
 		root = null;
 		this.repaint();
-	}
-
-	public void setHorizontalAlignment(Alignment horizontalAlignment) {
-		this.horizontalAlignment = horizontalAlignment;
-	}
-
-	public void setVerticalAlignment(Alignment verticalAlignment) {
-		this.verticalAlignment = verticalAlignment;
 	}
 
 	public void paint(Root root){
@@ -43,27 +34,9 @@ public class TreePanel extends JPanel {
 		
 		if(root == null)
 			return;
-		
-		int treeWidth = root.getDrawingWidth();
-		int treeHeight = root.getDrawingHeight();
-		
-		int xOffset, yOffset;
-		
-			switch(horizontalAlignment){
-				case LEFT: xOffset = 0; break;
-				case ROOT_CENTER: xOffset = -root.getX() + (this.getWidth() - root.getWidth()) / 2; break;
-				case TREE_CENTER: xOffset = (this.getWidth() - treeWidth) / 2; break;
-				case RIGHT: xOffset = this.getWidth() - treeWidth - 1; break;
-				default: xOffset = 0;
-			}
-
-			switch(verticalAlignment){
-				case TOP: yOffset = 0; break;
-				case ROOT_CENTER:  yOffset = -root.getY() + (this.getHeight() - root.getHeight()) / 2; break;
-				case TREE_CENTER: yOffset = (this.getHeight() - treeHeight) / 2; break;
-				case BOTTOM: yOffset = this.getHeight() - treeHeight - 1; break;
-				default: yOffset = 0;
-			}
+				
+		int xOffset = root.getXOffset(this.getWidth());
+		int yOffset = root.getYOffset(this.getHeight());
 		
 		paintEdges(g, root, 0, xOffset, yOffset);
 		paintNodes(g, root, 0, xOffset, yOffset);
