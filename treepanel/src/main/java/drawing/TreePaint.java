@@ -1,5 +1,5 @@
 package drawing;
-import static layout.LayoutAlgorithm.Orientation.*;
+import static layout.Orientation.*;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -12,6 +12,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+import layout.Settings;
 import layout.LayoutAlgorithm;
 import layout.Node;
 import sample.TreeFactory;
@@ -87,20 +88,22 @@ public class TreePaint extends JFrame {
 	
 	private void sample(){
 		TreeFactory factory = new TreeFactory();
-		Node apex = factory.sample1();
+		Node root = factory.sample1();
+		Settings s = null;
 		
 		LayoutAlgorithm alg = new LayoutAlgorithm();
+		int maxDepth = 2;
 		if(northRb.isSelected())
-			alg.rootOrientation = NORTH;
+			s = new Settings(maxDepth, 40, 40, 40, NORTH);
 		else if(southRb.isSelected())
-			alg.rootOrientation = SOUTH;
+			s = new Settings(maxDepth, 40, 40, 40, SOUTH);
 		else if(eastRb.isSelected())
-			alg.rootOrientation = EAST;
+			s = new Settings(maxDepth, 40, 40, 40, EAST);
 		else if(westRb.isSelected())
-			alg.rootOrientation = WEST;
-		alg.positionTree(apex);
+			s = new Settings(maxDepth, 40, 40, 40, WEST);
+		alg.positionTree(s, root);
 		
-		treePanel.paint(apex, alg.rootOrientation);
+		treePanel.paint(s, root);
 
 	}
 	
@@ -120,7 +123,7 @@ public class TreePaint extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				treePanel.paint((Node)null);
+				treePanel.clear();
 				orientationGroup.clearSelection();
 			}			
 		});

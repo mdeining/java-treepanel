@@ -1,17 +1,38 @@
 package layout;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-public class Node {
+public class Node implements Iterable<Node> {
 	
 	public static final int NODE_WIDTH = 20, NODE_HEIGHT = 20;
 	
-	public List<Node> children = new ArrayList<>();
-	public String data;
+	private String data;
+	private List<Node> children = new ArrayList<>();
 
 	protected Node parent, leftNeighbor;	
-	public double xCoordinate, yCoordinate, prelim, modifier;
+	protected int xCoordinate, yCoordinate, prelim, modifier;
+
+	public int getX() {
+		return xCoordinate;
+	}
+
+	public int getY() {
+		return yCoordinate;
+	}
+
+	public int getPrelim() {
+		return prelim;
+	}
+
+	public int getModifier() {
+		return modifier;
+	}
+	
+	public String getData(){
+		return data;
+	}
 	
 	public Node(String data) {
 		super();
@@ -25,42 +46,29 @@ public class Node {
 		}
 	}
 
-	// For each node, the algorithm uses nine different functions. 
-	// These might be stored in the memory allocated for each node, 
-	// or they might be calculated for each node, depending on the internal 
-	// structure of your application.
-	
-	// Upon entry to POSITIONTREE, the first four functions
-	// -the hierarchical relationships-are required for each node. 
-	// Also, XCOORD and YCOORD of the apex node are required. 
-	// Upon its successful completion, the algorithm sets the XCOORD and YCOORD 
-	// values for each node in the tree.
-	
-	
-//	// The current node's hierarchical parent
-//	public NodeClass PARENT(){
-//		return PARENT;
-//	}
-	
-	@Override
 	public String toString() {
 		return "Node[" + data + ", " + prelim + " + " + modifier + " ->\t" + xCoordinate + "|" + yCoordinate + "]";
 	}
 	
-	public void postOrderOut(){
-		this.postOrderOut(this);
+	public void printPostOrder(){
+		this.printPostOrder(this);
 	}
 
-	private void postOrderOut(Node node){
+	@Override
+	public Iterator<Node> iterator() {
+		return children.iterator();
+	}
+
+	private void printPostOrder(Node node){
 		if(node == null)
 			return;
 		for(Node child : node.children)
-			postOrderOut(child);
+			printPostOrder(child);
 		System.out.println(node.toString());
 	}
 
 	// 	The current node's leftmost offspring
-	public Node getFirstChild(){
+	protected Node getFirstChild(){
 		if(children.isEmpty())
 			return null;
 		else
@@ -68,7 +76,7 @@ public class Node {
 	}
 	
 	// The current node's closest sibling node on the left	
-	public Node getLeftSibling(){
+	protected Node getLeftSibling(){
 		if(parent == null) // apex
 			return null;
 		for(int i = 1; i < parent.children.size(); i++)
@@ -78,7 +86,7 @@ public class Node {
 	}
 	
 	// 	The current node's closest sibling node on the right
-	public Node getRightSibling(){
+	protected Node getRightSibling(){
 		if(parent == null)
 			return null;
 		for(int i = 0; i < parent.children.size() - 1; i++)
@@ -87,11 +95,11 @@ public class Node {
 		return null;		
 	}
 
-	public boolean hasRightSibling() {
+	protected boolean hasRightSibling() {
 		return this.getRightSibling() != null;
 	}
 
-	public boolean hasLeftSibling() {
+	protected boolean hasLeftSibling() {
 		return this.getLeftSibling() != null;
 	}
 
@@ -104,21 +112,21 @@ public class Node {
 	}
 
 	// Size of the right half of the node
-	public double getRightSize() {
-		return NODE_WIDTH / 2.0;
+	protected int getRightSize() {
+		return NODE_WIDTH / 2;
 	}
 
 	// Size of the left half of the node
-	public double getLeftSize() {
-		return NODE_WIDTH / 2.0;
+	protected int getLeftSize() {
+		return NODE_WIDTH / 2;
 	}
 	
-	public double getTopSize() {
-		return NODE_HEIGHT / 2.0;
+	protected int getTopSize() {
+		return NODE_HEIGHT / 2;
 	}
 	
-	public double getBottomSize() {
-		return NODE_HEIGHT / 2.0;
+	protected int getBottomSize() {
+		return NODE_HEIGHT / 2;
 	}
 	
 	public int getHeight() {
@@ -128,27 +136,4 @@ public class Node {
 	public int getWidth() {
 		return NODE_WIDTH;
 	}
-
-//	// The current node's x-coordinate
-//	public int XCOORD(){ return XCOORD; }
-//	public void XCOORD(int xcoord){ this.XCOORD = xcoord; }
-//		
-//	// The current node's y-coordinate
-//	public int YCOORD(){ return YCOORD; }
-//	public void YCOORD(int ycoord){ this.YCOORD = ycoord; }
-//	
-//	// The current node's preliminary x-coordinate
-//	public int PRELIM(){ return PRELIM; }
-//	public void PRELIM(int prelim){ this.PRELIM = prelim; }
-//
-//	// The current node's modifier value
-//	public int MODIFIER(){ return MODIFIER; }
-//	public void MODIFIER(int modifier){ this.MODIFIER = modifier; }
-
-//	// The current node's nearest neighbor to the left, at the same level
-//	public NodeClass LEFTNEIGHBOR(){
-//		//TODO
-//		return null;		
-//	}
-
 }

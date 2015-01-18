@@ -37,23 +37,23 @@ public class TreeTest {
 	
 	@Test
 	public void test1(){
-		LayoutAlgorithm alg = new LayoutAlgorithm();
-		alg.positionTree(o);
+		LayoutAlgorithm algorithm = new LayoutAlgorithm();
+		algorithm.positionTree(null, o);
 		
-		assertEquals(0, a.prelim, 0);	assertEquals(0, a.modifier, 0);	assertEquals(0, a.xCoordinate, 0);
-		assertEquals(0, b.prelim, 0);	assertEquals(0, b.modifier, 0);	assertEquals(30, b.xCoordinate, 0);
-		assertEquals(60, c.prelim, 0);	assertEquals(0, c.modifier, 0);	assertEquals(90, c.xCoordinate, 0);
-		assertEquals(60, d.prelim, 0);	assertEquals(30, d.modifier, 0);	assertEquals(60, d.xCoordinate, 0);
-		assertEquals(30, e.prelim, 0);	assertEquals(0, e.modifier, 0);	assertEquals(30, e.xCoordinate, 0);
-		assertEquals(135, f.prelim, 0);	assertEquals(45, f.modifier, 0);	assertEquals(135, f.xCoordinate, 0);
-		assertEquals(0, g.prelim, 0);	assertEquals(0, g.modifier, 0);	assertEquals(210, g.xCoordinate, 0);
-		assertEquals(0, h.prelim, 0);	assertEquals(0, h.modifier, 0);	assertEquals(150, h.xCoordinate, 0);
-		assertEquals(60, i.prelim, 0);	assertEquals(0, i.modifier, 0);	assertEquals(210, i.xCoordinate, 0);
-		assertEquals(120, j.prelim, 0);	assertEquals(0, j.modifier, 0);	assertEquals(270, j.xCoordinate, 0);
-		assertEquals(180, k.prelim, 0);	assertEquals(0, k.modifier, 0);	assertEquals(330, k.xCoordinate, 0);
-		assertEquals(240, l.prelim, 0);	assertEquals(0, l.modifier, 0);	assertEquals(390, l.xCoordinate, 0);
-		assertEquals(60, m.prelim, 0);	assertEquals(-60, m.modifier, 0);	assertEquals(270, m.xCoordinate, 0);
-		assertEquals(240, n.prelim, 0);	assertEquals(210, n.modifier, 0);	assertEquals(240, n.xCoordinate, 0);
-		assertEquals(135, o.prelim, 0);	assertEquals(0, o.modifier, 0);	assertEquals(135, o.xCoordinate, 0);
+		assertEquals(0, a.getPrelim());		assertEquals(0, a.getModifier());	assertEquals(0, a.getX());
+		assertEquals(0, b.getPrelim());		assertEquals(0, b.getModifier());	assertEquals(30, b.getX());
+		assertEquals(60, c.getPrelim());	assertEquals(0, c.getModifier());	assertEquals(90, c.getX());
+		assertEquals(60, d.getPrelim());	assertEquals(30, d.getModifier());	assertEquals(60, d.getX());
+		assertEquals(30, e.getPrelim());	assertEquals(0, e.getModifier());	assertEquals(30, e.getX());
+		assertEquals(135, f.getPrelim());	assertEquals(45, f.getModifier());	assertEquals(135, f.getX());
+		assertEquals(0, g.getPrelim());		assertEquals(0, g.getModifier());	assertEquals(210, g.getX());
+		assertEquals(0, h.getPrelim());		assertEquals(0, h.getModifier());	assertEquals(150, h.getX());
+		assertEquals(60, i.getPrelim());	assertEquals(0, i.getModifier());	assertEquals(210, i.getX());
+		assertEquals(120, j.getPrelim());	assertEquals(0, j.getModifier());	assertEquals(270, j.getX());
+		assertEquals(180, k.getPrelim());	assertEquals(0, k.getModifier());	assertEquals(330, k.getX());
+		assertEquals(240, l.getPrelim());	assertEquals(0, l.getModifier());	assertEquals(390, l.getX());
+		assertEquals(60, m.getPrelim());	assertEquals(-60, m.getModifier());	assertEquals(270, m.getX());
+		assertEquals(240, n.getPrelim());	assertEquals(210, n.getModifier());	assertEquals(240, n.getX());
+		assertEquals(135, o.getPrelim());	assertEquals(0, o.getModifier());	assertEquals(135, o.getX());
 	}
 }
