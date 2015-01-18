@@ -5,9 +5,14 @@
 
 	<groupId>mde</groupId>
 	<artifactId>org.treepanel</artifactId>
-	<version>0.0.1</version>
+	<version>0.1</version>
 	<name>Java-Treepanel-Widget</name>
-	<description>A swing widget for easily displaying trees</description>
+	<description>A Swing widget for easily displaying trees based on 
+		Walker, John Q. II. A Node-Positioning Algorithm for 
+		General Trees (TR89-034). Department of Computer Science, 
+		The University of North Carolina at Chapel Hill. 1989.
+		http://www.cs.unc.edu/techreports/89-034.pdf
+	</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -28,6 +33,14 @@
 	</build>
 
 	<dependencies>
-	</dependencies>
 	
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+		
+	</dependencies>
+
 </project>
