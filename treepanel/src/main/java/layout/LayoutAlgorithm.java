@@ -52,11 +52,12 @@ public class LayoutAlgorithm {
 	private int getDrawingDepth(Node node, int level){
 		int depth = level;
 		if(level < settings.getMaxDepth()){
-			for(Node child : node){
-				int subtreeDepth = getDrawingDepth(child, level + 1);
-				if(subtreeDepth > depth)
-					depth = subtreeDepth;
-			}
+			for(Node child : node)
+				if(child != null){
+					int subtreeDepth = getDrawingDepth(child, level + 1);
+					if(subtreeDepth > depth)
+						depth = subtreeDepth;
+				}
 		}
 		return depth;
 	}

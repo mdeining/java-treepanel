@@ -43,6 +43,9 @@ public class TreePanel extends JPanel {
 	}
 
 	private void paintEdges(Graphics g, Node node, int level, int xOffset, int yOffset) {
+		if(node == null || node.isPlaceHolder())
+			return;
+				
 		if(level >= root.getMaxDepth())
 			return;
 
@@ -52,6 +55,9 @@ public class TreePanel extends JPanel {
 		int h = node.getHeight();
 		
 		for(Node child : node){
+			if(child == null || child.isPlaceHolder())
+				continue;
+			
 			int xc = child.getX();
 			int yc = child.getY();
 			int wc = child.getWidth();
@@ -95,6 +101,9 @@ public class TreePanel extends JPanel {
 	}
 
 	private void paintNodes(Graphics g, Node node, int level, int xOffset, int yOffset) {
+		if(node == null || node.isPlaceHolder())
+			return;
+
 		if(level > root.getMaxDepth())
 			return;
 		

@@ -19,6 +19,7 @@ import javax.swing.JSpinner;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import accessor.TreeWrapper;
 import layout.Orientation;
 import layout.Root;
 import sample.TreeFactory;
@@ -49,8 +50,17 @@ public class TreePaint extends JFrame {
 	public TreePaint(){
 		super("Frame Template");
 		
-		TreeFactory factory = new TreeFactory();
-		root = factory.sample1();
+		// The Model
+		
+		tree.Sample s = new tree.Sample();
+		tree.Root r = s.sample();
+		
+		TreeWrapper wrapper = new TreeWrapper();
+		root = wrapper.wrap(r);
+
+		
+//		TreeFactory factory = new TreeFactory();
+//		root = factory.sample1();
 		root.setMaxDepth(INITIAL_DEPTH);
 		
 		root.setLevelSepartion(80);

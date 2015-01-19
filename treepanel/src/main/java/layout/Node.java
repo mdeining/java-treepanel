@@ -42,7 +42,8 @@ public abstract class Node implements Iterable<Node> {
 	public void add(Node ... children){
 		for(Node child : children){
 			this.children.add(child);
-			child.parent = this;
+			if(child != null)
+				child.parent = this;
 		}
 		this.update();
 	}
@@ -64,7 +65,8 @@ public abstract class Node implements Iterable<Node> {
 		yCoordinate = 0;
 		
 		for(Node child : children)
-			child.initialize();
+			if(child != null)
+				child.initialize();
 	}
 	
 	protected void update(){
@@ -73,19 +75,26 @@ public abstract class Node implements Iterable<Node> {
 
 	// 	The current node's leftmost offspring
 	protected Node getFirstChild(){
-		if(children.isEmpty())
+		for(Node child : children)
+			if(child != null)
+				return child;
 			return null;
-		else
-			return children.get(0);
 	}
 	
 	// The current node's closest sibling node on the left	
 	protected Node getLeftSibling(){
-		if(parent == null) // apex
+		if(parent == null) // root
 			return null;
-		for(int i = 1; i < parent.children.size(); i++)
+		
+		int thisPos = -1;	
+		for(int i = 0; i < parent.children.size(); i++)
 			if(parent.children.get(i) == this)
-				return parent.children.get(i - 1);		
+				thisPos = i;
+
+		for(int i = thisPos - 1; i >= 0; i--)
+			if(parent.children.get(i) != null)
+				return parent.children.get(i);
+		
 		return null;		
 	}
 	
@@ -93,9 +102,16 @@ public abstract class Node implements Iterable<Node> {
 	protected Node getRightSibling(){
 		if(parent == null)
 			return null;
-		for(int i = 0; i < parent.children.size() - 1; i++)
+
+		int thisPos = -1;	
+		for(int i = 0; i < parent.children.size(); i++)
 			if(parent.children.get(i) == this)
-				return parent.children.get(i + 1);		
+				thisPos = i;
+
+		for(int i = thisPos + 1; i < parent.children.size(); i++)
+			if(parent.children.get(i) != null)
+				return parent.children.get(i);
+		
 		return null;		
 	}
 
@@ -108,11 +124,14 @@ public abstract class Node implements Iterable<Node> {
 	}
 
 	public boolean isLeaf() {
-		return children.isEmpty();
+		return !hasChild();
 	}
 
 	public boolean hasChild() {
-		return !this.isLeaf();
+		for(Node child : children)
+			if(child != null)
+				return true;
+		return false;
 	}
 
 	// Size of the right half of the node
@@ -143,21 +162,27 @@ public abstract class Node implements Iterable<Node> {
 	
 	protected int getDrawingWidth(){
 		int width = this.getX() + this.getWidth();
-		for(Node child : children){
-			int childWidth = child.getDrawingWidth();
-			if(childWidth > width)
-				width = childWidth;
-		}
+		for(Node child : children)
+			if(child != null){
+				int childWidth = child.getDrawingWidth();
+				if(childWidth > width)
+					width = childWidth;
+			}
 		return width;
 	}
 
 	protected int getDrawingHeight(){
 		int height = this.getY() + this.getHeight();
-		for(Node child : children){
-			int childHeight = child.getDrawingHeight();
-			if(childHeight > height)
-				height = childHeight;
-		}
+		for(Node child : children)
+			if(child != null){
+				int childHeight = child.getDrawingHeight();
+				if(childHeight > height)
+					height = childHeight;
+			}
 		return height;
+	}
+
+	public boolean isPlaceHolder(){
+		return false;
 	}
 }
