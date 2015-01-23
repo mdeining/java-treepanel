@@ -13,7 +13,8 @@ public class Style extends Observable{
 	public static int MARGIN = 0;
 	
 	public static int POINTER_BOX_HEIGHT = 8;
-	public static int ARC_SIZE = 10, ARC_OFFSET = 2;
+	public static int ARC_SIZE = 10;
+
 	
 	// General settings
 	private int maxDepth, siblingSeparation, 
@@ -79,6 +80,8 @@ public class Style extends Observable{
 	}
 
 	public void setOrientation(Orientation orientation) {
+		if(this.orientation == orientation)
+			return;
 		this.orientation = orientation;
 		this.notify(RECALCULATE);
 	}
@@ -96,8 +99,10 @@ public class Style extends Observable{
 	}
 
 	public void setHorizontalAlignment(Alignment horizontalAlignment) {
+		if(this.horizontalAlignment == horizontalAlignment)
+			return;
 		this.horizontalAlignment = horizontalAlignment;
-		this.notify(REPAINT);
+		this.notify(RECALCULATE);
 	}
 
 	public Alignment getVerticalAlignment() {
@@ -105,8 +110,10 @@ public class Style extends Observable{
 	}
 
 	public void setVerticalAlignment(Alignment verticalAlignment) {
+		if(this.verticalAlignment == verticalAlignment)
+			return;
 		this.verticalAlignment = verticalAlignment;
-		this.notify(REPAINT);
+		this.notify(RECALCULATE);
 	}
 
 	public boolean hasRootPointer() {
@@ -120,11 +127,11 @@ public class Style extends Observable{
 	
 	/////////////////////////////////////////////////////////
 	
-	
-	private Size getSize(Object obj) {
-		return size.getValue(obj);
+	private Size getSize(Class<?> cls){
+		return size.getValue(cls);
 	}
-
+	
+	
 	public void setSize(Size size) {
 		this.size.setValue(size);
 		this.notify(REBUILD);
@@ -141,20 +148,19 @@ public class Style extends Observable{
 	}
 	
 	public int getWidth(Node node){
-		Size size = this.getSize(node);	
+		Size size = this.getSize(node.getNodeClass());	
 		int width = size.getWidth(node.getLabel());
 		return width;		
 	}
 
 	public int getHeight(Node node){
-		Size size = this.getSize(node.getData());	
+		Size size = this.getSize(node.getNodeClass());	
 		int height = size.getHeight(node.getLabel());
 		return height;		
 	}
 	
 	public String[] getLabel(Graphics g, Node node){
-		Object wrappedNode = node.getData();
-		Size size = this.getSize(wrappedNode);
+		Size size = this.getSize(node.getNodeClass());
 		String[] label = size.getLabel(g, this.getDrawingArea(node), node.getLabel());
 		return label;		
 	}
@@ -162,22 +168,22 @@ public class Style extends Observable{
 	public Rectangle getDrawingArea(Node node) {
 		int x = node.getX();
 		x = x + MARGIN;
-		if(this.hasPointerBoxes(node.getData()) && orientation == WEST)
+		if(this.hasPointerBoxes(node.getNodeClass()) && orientation == WEST)
 			x = x + POINTER_BOX_HEIGHT;
 
 		int y = node.getY();
 		y = y + MARGIN;
-		if(this.hasPointerBoxes(node.getData()) && orientation == SOUTH)
+		if(this.hasPointerBoxes(node.getNodeClass()) && orientation == SOUTH)
 			y = y + POINTER_BOX_HEIGHT;
 
 		int w = this.getWidth(node);
 		w = w - 2 * MARGIN;
-		if(this.hasPointerBoxes(node.getData()) && this.hasHorizontalOrientation())
+		if(this.hasPointerBoxes(node.getNodeClass()) && this.hasHorizontalOrientation())
 			w = w - POINTER_BOX_HEIGHT;
 
 		int h = this.getHeight(node);
 		h = h - 2 * MARGIN;
-		if(this.hasPointerBoxes(node.getData()) && this.hasVerticalOrientation())
+		if(this.hasPointerBoxes(node.getNodeClass()) && this.hasVerticalOrientation())
 			h = h - POINTER_BOX_HEIGHT;
 
 		return new Rectangle(x, y, w, h);

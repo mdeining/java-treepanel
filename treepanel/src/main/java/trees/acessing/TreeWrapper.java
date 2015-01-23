@@ -11,7 +11,7 @@ public class TreeWrapper {
 		if(object == null)
 			return null;
 		
-		NodeWrapper wrappedRoot = new NodeWrapper(object);		
+		WrappedNode wrappedRoot = new WrappedNode(object);		
 		Root root = new Root(wrappedRoot);
 		
 		wrap(root, wrappedRoot);
@@ -19,16 +19,17 @@ public class TreeWrapper {
 		return root;
 	}
 
-	private void wrap(Node node, NodeWrapper wrappedNode){
-		boolean usePlaceHolders = wrappedNode.hasDescendants();
+	private void wrap(Node node, WrappedNode wrappedNode){
+		Class<?> descendantClass = wrappedNode.getFirstDescendant();
+		boolean usePlaceHolders = (descendantClass != null);
 		for(Object object : wrappedNode.getDescendants())
 			if(object == null)
 				if(usePlaceHolders)
-					node.add(new PlaceHolder());
+					node.add(new PlaceHolder(descendantClass));
 				else
 					node.add((Node)null);
 			else{
-				NodeWrapper wrappedChild = new NodeWrapper(object);
+				WrappedNode wrappedChild = new WrappedNode(object);
 				Node child = new Child(wrappedChild);
 				node.add(child);
 				wrap(child, wrappedChild);

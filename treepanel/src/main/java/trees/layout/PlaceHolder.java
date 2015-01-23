@@ -2,8 +2,8 @@ package trees.layout;
 
 public class PlaceHolder extends Node {
 
-	public PlaceHolder() {
-		super(null);
+	public PlaceHolder(Class<?> cls) {
+		super(new NodeProxy(cls));
 	}
 
 	@Override

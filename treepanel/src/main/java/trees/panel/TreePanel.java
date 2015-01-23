@@ -5,6 +5,10 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.Area;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
+import java.awt.geom.RoundRectangle2D.Double;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -50,7 +54,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 	public T getTree(){
 		if(root == null)
 			return null;
-		return (T)root.getData();		
+		return (T)root.getNode();		
 	}
 	
 	public void clear() {
@@ -76,8 +80,14 @@ public class TreePanel<T> extends JPanel implements Observer{
 		if(root == null)
 			return;
 				
-		int xOffset = root.getXOffset(style, this.getWidth());
-		int yOffset = root.getYOffset(style, this.getHeight());
+//		int xOffset = root.getXOffset(style, this.getWidth());
+//		int yOffset = root.getYOffset(style, this.getHeight());
+		
+		layoutAlgorithm.setOffsets(this.getWidth(), this.getHeight());
+		
+		int xOffset = 0;
+		int yOffset = 0;
+
 		
 		drawEdges(g, root, 0, xOffset, yOffset);
 		drawNodes(g, root, 0, xOffset, yOffset);
@@ -217,105 +227,95 @@ public class TreePanel<T> extends JPanel implements Observer{
 	}
 	
 	private void drawNode(Graphics g, Node node, int xOffset, int yOffset) {
-		int x = node.getX() + xOffset;
-		int y = node.getY() + yOffset;
+		int x = node.getX();
+		int y = node.getY();
 		int w = node.getWidth(style);
 		int h = node.getHeight(style);
 		
-		Shape shape = style.getShape();
+		Shape shape = style.getShape(node);
 		switch(shape){
 			case RECTANGLE:			g.drawRect(x, y, w, h); break;
 			case ROUNDED_RECTANGLE:	g.drawRoundRect(x, y, w, h, Style.ARC_SIZE, Style.ARC_SIZE); break;
-		}
-		
+		}		
+		drawPointerBoxes(g, node, x, y, w, h, shape);		
+		drawLabel(g, node);		
+	}
+
+	private void drawPointerBoxes(Graphics g, Node node, int x, int y, int w,
+			int h, Shape shape) {
 		if(style.hasPointerBoxes()){
 			boolean[] childrenState = node.getChildrenState();
-
-			int x1 = x, x2 = x + w, y1 = y, y2 = y + h, xp, yp, portion;
-			int edge = (shape == Shape.ROUNDED_RECTANGLE ? Style.ARC_OFFSET : 0);
-			
+			int boxes = childrenState.length;
+			int y1 = 0, y2 = 0, x1 = 0, x2 = 0, yp = 0, xp = 0, b = Style.POINTER_BOX_HEIGHT;
 			switch(style.getOrientation()){
-				case NORTH:
-					yp = y + h - Style.POINTER_BOX_HEIGHT; 
-					g.drawLine(x1, yp, x2, yp);
-					portion = w / childrenState.length;
-					for(int i = 0, xb = x + portion; xb < x + w; i++, xb += portion){
-						g.drawLine(xb, yp, xb, y2);
-						if(!childrenState[i]){
-							g.drawLine(xb - portion, yp, xb, y2);
-							g.drawLine(xb - portion + (i == 0 ? edge : 0), y2 - (i == 0 ? edge : 0), xb, yp);
-						}
-					}
-					if(!childrenState[childrenState.length - 1]){
-						g.drawLine(x2 - portion, yp, x2 - edge, y2 - edge);
-						g.drawLine(x2 - portion, y2, x2, yp);
-					}
-					break;
-					
-				case SOUTH:
-					yp = y + Style.POINTER_BOX_HEIGHT; 
-					g.drawLine(x1, yp, x2, yp);
-					portion = w / childrenState.length;
-					for(int i = 0, xb = x + portion; xb < x + w; i++, xb += portion){
-						g.drawLine(xb, yp, xb, y1);
-						if(!childrenState[i]){
-							g.drawLine(xb - portion, yp, xb, y1);
-							g.drawLine(xb - portion + (i == 0 ? edge : 0), y1 + (i == 0 ? edge : 0), xb, yp);
-						}
-					}
-					if(!childrenState[childrenState.length - 1]){
-						g.drawLine(x2 - portion, yp, x2 - edge, y1 + edge);
-						g.drawLine(x2 - portion, y1, x2, yp);
-					}
-					break;
-					
-				case EAST:
-					xp = x + w - Style.POINTER_BOX_HEIGHT; 
-					g.drawLine(xp, y1, xp, y2);
-					portion = h / childrenState.length;
-					for(int i = 0, yb = y + portion; yb < y + h; i++, yb += portion){
-						g.drawLine(xp, yb, x2, yb);
-						if(!childrenState[i]){
-							g.drawLine(xp, yb - portion, x2, yb);
-							g.drawLine(x2 - (i == 0 ? edge : 0), yb - portion + (i == 0 ? edge : 0), xp, yb);
-						}
-					}
-					if(!childrenState[childrenState.length - 1]){
-						g.drawLine(xp, y2 - portion, x2 - edge, y2 - edge);
-						g.drawLine(x2, y2 - portion, xp, y2);
-					}
-				break;
-				
-				case WEST:
-					xp = x + Style.POINTER_BOX_HEIGHT; 
-					g.drawLine(xp, y1, xp, y2);
-					portion = h / childrenState.length;
-					for(int i = 0, yb = y + portion; yb < y + h; i++, yb += portion){
-						g.drawLine(xp, yb, x1, yb);
-						if(!childrenState[i]){
-							g.drawLine(xp, yb - portion, x1, yb);
-							g.drawLine(x1 + (i == 0 ? edge : 0), yb - portion + (i == 0 ? edge : 0), xp, yb);
-						}
-					}
-					if(!childrenState[childrenState.length - 1]){
-						g.drawLine(xp, y2 - portion, x1 + edge, y2 - edge);
-						g.drawLine(x1, y2 - portion, xp, y2);
-					}
-					break;
+				case NORTH: y1 = y + h - b; y2 = y1 + b; x1 = x; xp = w / boxes; break;
+				case SOUTH: y1 = y + b; y2 = y1 - b; x1 = x; xp = w / boxes;  break;
+				case EAST:	x1 = x + w - b; x2 = x1 + b; y1 = y; yp = h / boxes; break;
+				case WEST:	x1 = x + b; x2 = x1 - b; y1 = y; yp = h / boxes; break;
 			}
+			for(int i = 0; i < boxes; i++)
+				if(style.hasVerticalOrientation()){
+					x2 = x1 + xp;
+					drawHorizontalPointerBox(g, y1, y2, x1, x2, childrenState[i], i, boxes);
+					x1 = x2;
+				}else{ // style.hasHorozontalOrientation()
+					y2 = y1 + yp;
+					drawVerticalPointerBox(g, x1, x2, y1, y2, childrenState[i], i, boxes);
+					y1 = y2;
+				}
+			fixShape(g, shape, x, y, w, h, childrenState);
 		}
+	}
+
+	private void drawHorizontalPointerBox(Graphics g, int y1, int y2, int x1, int x2, boolean hasChild, int i, int boxes) {
+		g.drawLine(x1, y1, x2, y1);
+		if (i != boxes - 1) g.drawLine(x2, y1, x2, y2);
+		if(hasChild) return;
+				
+		g.drawLine(x1, y1, x2, y2);
+		g.drawLine(x1, y2, x2, y1);
+	}
+
+	private void drawVerticalPointerBox(Graphics g, int x1, int x2, int y1, int y2, boolean hasChild, int i, int boxes) {
+		g.drawLine(x1, y1, x1, y2);
+		if (i != boxes - 1) g.drawLine(x1, y2, x2, y2);		
+		if(hasChild) return;
+
+		g.drawLine(x1, y1, x2, y2);
+		g.drawLine(x1, y2, x2, y1);
+	}
+
+	private void fixShape(Graphics g, Shape shape, int x, int y, int w, int h, boolean[] childrenState) {
+		if(shape == Shape.RECTANGLE)
+			return;
+		if(childrenState[0] && childrenState[childrenState.length - 1])
+			return;
 		
+		Graphics2D g2 = (Graphics2D) g;
+		
+		Double rectangle = new RoundRectangle2D.Double();
+		rectangle.setRoundRect(x - 1, y - 1, w + 2, h + 2, Style.ARC_SIZE, Style.ARC_SIZE);
+		Area rectangleArea = new Area(rectangle);
+		Area mask = new Area(new Rectangle2D.Double(x - 1, y - 1, w + 2, h + 2));
+		
+		mask.subtract(rectangleArea);
+		g2.setColor(Color.WHITE);
+		g2.fill(mask);
+		g2.setColor(Color.BLACK);
+	}
+
+	private void drawLabel(Graphics g, Node node) {
 		FontMetrics metrics = g.getFontMetrics();
 		String[] label = style.getLabel(g, node);
 		Rectangle area = style.getDrawingArea(node);
 		
-		g.setColor(Color.YELLOW);
+//		g.setColor(Color.YELLOW);
 		int dx = area.x;
 		int dy = area.y;
 		int dw = area.width;
 		int dh = area.height;
-		g.fillRect(dx, dy, dw, dh);
-		g.setColor(Color.BLACK);
+//		g.fillRect(dx, dy, dw, dh);
+//		g.setColor(Color.BLACK);
 		
 		dy = dy + metrics.getAscent();
 		for(int i = 0; i < label.length; i++){
@@ -324,9 +324,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 			g.drawString(line, dx + p, dy);
 			dy = dy + metrics.getHeight();
 		}
-		
 	}
-
 
 	@Override
 	public void update(Observable o, Object arg) {
@@ -335,7 +333,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 		
 		switch((Action)arg){
 			case REPAINT:  		break;
-			case RECALCULATE:	layoutAlgorithm.recalculateTree(style, root); break;
+//			case RECALCULATE:	layoutAlgorithm.recalculateTree(style, root); break;
 			case REBUILD:		layoutAlgorithm.positionTree(style, root); break;
 		}
 		this.repaint();

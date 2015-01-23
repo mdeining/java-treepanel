@@ -20,14 +20,14 @@ import javax.swing.JSpinner;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import samples.tree.Root;
-import samples.tree.Sample;
 import trees.panel.style.Alignment;
 import trees.panel.style.Fixed;
 import trees.panel.style.Orientation;
 import trees.panel.style.Shape;
 import trees.panel.style.Style;
 import trees.panel.TreePanel;
+import samples.tree.Root;
+import samples.tree.Sample;
 
 
 @SuppressWarnings("serial")
@@ -58,10 +58,11 @@ public class TreePaint extends JFrame {
 		// The Model
 		
 		Sample s = new samples.tree.Sample();
-		root = s.sample();
-//		root.add("xxxxxxxxxxxxx\nyyyyyy\nzz");
-		
+//		root = s.sample();
+////		root.add("xxxxxxxxxxxxx\nyyyyyy\nzz");
+//		
 //		root = new Root("XXXXXXXXXX\nyyyyyy\nzz");
+		root = new Root("B"); root.add("A"); root.add("C");
 				
 		treePanel = new TreePanel<Root>(root);
 
@@ -106,6 +107,7 @@ public class TreePaint extends JFrame {
 		orientationGroup.add(southRb);
 		orientationGroup.add(eastRb);
 		orientationGroup.add(westRb);
+		northRb.setSelected(true);
 		
 		Style style = treePanel.getStyle();
 		verticalGroup = new ButtonGroup();
@@ -131,7 +133,7 @@ public class TreePaint extends JFrame {
 		style.setPointerBoxes(true);
 		style.setLevelSepartion(80);
 		
-		style.setSize(new Fixed(40, 60));
+		style.setSize(new Fixed(60, 40));
 	}
 	
 	private JPanel createWidgetLayout() {

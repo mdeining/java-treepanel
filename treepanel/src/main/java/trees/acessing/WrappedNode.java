@@ -7,19 +7,25 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class NodeWrapper {
+public class WrappedNode extends AbstractNode{
 	
 	private Object node;
 	private List<?> descendants;
 	private List<Method> labelers;
 
-	public NodeWrapper(Object node) {
+	public WrappedNode(Object node) {
 		super();
 		this.node = node;
 		this.descendants = initDecendants(node);
 		this.labelers = initLabelers(node);
 	};	
 	
+	@Override
+	public Class<?> getNodeClass(){
+		return node.getClass();
+	}
+	
+	@Override
 	public Object getNode(){
 		return node;
 	}
@@ -28,6 +34,7 @@ public class NodeWrapper {
 		return descendants;
 	}
 	
+	@Override
 	public String getLabel(){
 		try {
 			Method method = labelers.get(0);
@@ -48,6 +55,13 @@ public class NodeWrapper {
 			if(descendant != null)
 				return true;
 		return false;
+	}
+
+	public Class<?> getFirstDescendant() {
+		for(Object descendant : descendants)
+			if(descendant != null)
+				return descendant.getClass();
+		return null;
 	}
 
 	private List<?> initDecendants(Object object) {

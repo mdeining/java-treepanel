@@ -1,27 +1,28 @@
 package trees.layout;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import trees.acessing.NodeWrapper;
+import trees.acessing.AbstractNode;
 import trees.panel.style.Style;
 
 public abstract class Node implements Iterable<Node> {
 	
 //	public static final int NODE_WIDTH = 60, NODE_HEIGHT = 40;
 	
-	private NodeWrapper data;
+	private AbstractNode wrappedNode;
 	private List<Node> children = new ArrayList<>();
 	private boolean[] childrenState = new boolean[0];
 
 	protected Node parent, leftNeighbor;	
 	protected int xCoordinate, yCoordinate, prelim, modifier;
 
-	public Node(NodeWrapper data) {
+	public Node(AbstractNode wrappedNode) {
 		super();
-		this.data = data;
+		this.wrappedNode = wrappedNode;
 	}
 
 	public int getX() {
@@ -40,8 +41,12 @@ public abstract class Node implements Iterable<Node> {
 		return modifier;
 	}
 	
-	public Object getData(){
-		return data.getNode();
+	public Class<?> getNodeClass(){
+		return wrappedNode.getNodeClass();
+	}
+	
+	public Object getNode(){
+		return wrappedNode.getNode();
 	}
 	
 	public void add(Node ... children){
@@ -57,10 +62,10 @@ public abstract class Node implements Iterable<Node> {
 	}
 
 	public String getLabel() {
-		if(data == null)
+		if(wrappedNode == null)
 			return "";
 		else
-			return data.getLabel();
+			return wrappedNode.getLabel();
 	}
 
 	public String toString() {
@@ -164,33 +169,30 @@ public abstract class Node implements Iterable<Node> {
 	}
 	
 	public int getHeight(Style style) {
-		return style.getWidth(this);
+		return style.getHeight(this);
 	}
 
 	public int getWidth(Style style) {
-		return style.getHeight(this);
+		return style.getWidth(this);
 	}
 	
-	protected int getDrawingWidth(Style style){
-		int width = this.getX() + this.getWidth(style);
+	protected Rectangle getTreeArea(Style style){
+		
+		int x = this.getX();
+		int y = this.getY();		
+		int w = this.getWidth(style);
+		int h = this.getHeight(style);
+		
 		for(Node child : children)
 			if(child != null){
-				int childWidth = child.getDrawingWidth(style);
-				if(childWidth > width)
-					width = childWidth;
+				Rectangle r = child.getTreeArea(style);
+				if(r.x < x)			x = r.x;
+				if(r.y < y)			y = r.y;
+				if(r.width > w)		w = r.width;
+				if(r.height > h)	h = r.height;
 			}
-		return width;
-	}
-
-	protected int getDrawingHeight(Style style){
-		int height = this.getY() + this.getHeight(style);
-		for(Node child : children)
-			if(child != null){
-				int childHeight = child.getDrawingHeight(style);
-				if(childHeight > height)
-					height = childHeight;
-			}
-		return height;
+		Rectangle r = new Rectangle(x, y, w, h);
+		return r;
 	}
 
 	public boolean isPlaceHolder(){
