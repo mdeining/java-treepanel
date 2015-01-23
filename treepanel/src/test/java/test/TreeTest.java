@@ -1,12 +1,13 @@
 package test;
 
 import static org.junit.Assert.assertEquals;
-import layout.Child;
-import layout.Node;
-import layout.Root;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import samples.tree.Node;
+import samples.tree.Root;
+import trees.layout.Child;
 
 public class TreeTest {
 	
