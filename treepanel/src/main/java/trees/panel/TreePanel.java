@@ -5,6 +5,8 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
@@ -15,6 +17,7 @@ import java.util.Observer;
 import javax.swing.JPanel;
 
 import trees.acessing.TreeWrapper;
+import trees.layout.Label;
 import trees.layout.LayoutAlgorithm;
 import trees.layout.Node;
 import trees.layout.Root;
@@ -28,6 +31,8 @@ public class TreePanel<T> extends JPanel implements Observer{
 	
 	private TreeWrapper wrapper = new TreeWrapper();
 	private LayoutAlgorithm layoutAlgorithm = new LayoutAlgorithm();
+	
+	private PanelOffset<T> offset;
 	private Root root;
 	private Style style;
 	
@@ -40,13 +45,27 @@ public class TreePanel<T> extends JPanel implements Observer{
 		super();
 		this.style = StyleFactory.getDefaultStyle();
 		this.style.addObserver(this);
+		this.style.setPanel(this); // for accessing the font metrics
+		this.offset = new PanelOffset<T>(this);
 		this.root = null;
 		this.setBackground(Color.WHITE);
+		this.addUpdateListener();
 	}
 	
+	private void addUpdateListener() {
+		this.addComponentListener(new ComponentAdapter(){
+
+			@Override
+			public void componentResized(ComponentEvent e) {
+				offset.update();
+			}
+		});
+	}
+
 	public void setTree(T root){
 		this.root = wrapper.wrap(root);
 		layoutAlgorithm.positionTree(this.style, this.root);
+		offset.update();
 		this.repaint();
 	}
 	
@@ -72,6 +91,26 @@ public class TreePanel<T> extends JPanel implements Observer{
 		this.style = style;
 		this.style.addObserver(this);
 	}
+	
+	@Override
+	public void update(Observable o, Object arg) {
+		if(!(o instanceof Style && arg instanceof Action))
+			return;
+		
+		switch((Action)arg){
+			case REPAINT:  		break;
+			case REALIGN:		offset.update();
+			case RECALCULATE:	layoutAlgorithm.recalculateTree(style, root); offset.update(); break;
+			case REBUILD:		layoutAlgorithm.positionTree(style, root); offset.update(); break;
+		}
+		this.repaint();
+	}
+
+	protected Root getRoot(){
+		return root;
+	}
+	
+	////////////// Paint Component ///////////////
 
 	@Override
 	protected void paintComponent(Graphics g) {
@@ -79,173 +118,42 @@ public class TreePanel<T> extends JPanel implements Observer{
 		
 		if(root == null)
 			return;
-				
-//		int xOffset = root.getXOffset(style, this.getWidth());
-//		int yOffset = root.getYOffset(style, this.getHeight());
-		
-		layoutAlgorithm.setOffsets(this.getWidth(), this.getHeight());
-		
-		int xOffset = 0;
-		int yOffset = 0;
 
-		
-		drawEdges(g, root, 0, xOffset, yOffset);
-		drawNodes(g, root, 0, xOffset, yOffset);
+		drawEdges(g, root, 0);
+		drawNodes(g, root, 0);
 	}
-
-//	private void drawEdges(Graphics g, Node node, int level, int xOffset, int yOffset) {
-//		if(node == null || node.isPlaceHolder())
-//			return;
-//				
-//		if(level >= style.getMaxDepth())
-//			return;
-//
-//		int x = node.getX();
-//		int y = node.getY();
-//		int w = node.getWidth();
-//		int h = node.getHeight();
-//		
-//		for(Node child : node){
-//			if(child == null || child.isPlaceHolder())
-//				continue;
-//			
-//			int xc = child.getX();
-//			int yc = child.getY();
-//			int wc = child.getWidth();
-//			int hc = child.getHeight();
-//			
-//			int xs = 0, ys = 0, xe = 0, ye = 0;
-//			
-//			switch(style.getOrientation()){
-//				case NORTH:
-//					xs = x + w / 2;
-//					ys = y + h;
-//					xe = xc + wc / 2;
-//					ye = yc;
-//					break;
-//				case SOUTH:
-//					xs = x + w / 2;
-//					ys = y;
-//					xe = xc + wc / 2;
-//					ye = yc + hc;
-//					break;
-//				case EAST:
-//					xs = x + w;
-//					ys = y + h/2;
-//					xe = xc;
-//					ye = yc + hc/2;
-//					break;
-//				case WEST:
-//					xs = x;
-//					ys = y + h/2;
-//					xe = xc + wc;
-//					ye = yc + hc/2;
-//					break;
-//			}
-//			
-//			
-//			g.drawLine(xs + xOffset, ys + yOffset, xe + xOffset, ye + yOffset);
-//		}
-//		
-//		for(Node child : node)
-//			drawEdges(g, child, level + 1, xOffset, yOffset);
-//	}
 	
-	private void drawEdges(Graphics g, Node node, int level, int xOffset, int yOffset) {
-		if(node == null || node.isPlaceHolder())
-			return;
-				
-		if(level >= style.getMaxDepth())
-			return;
+	////////////// Nodes ///////////////
 
-		int slots = node.getChildrenState().length, position = 0;
-		for(Node child : node)
-			if(child != null && !child.isPlaceHolder())
-				drawEdge(g, node, child, position, slots, xOffset, yOffset);
-		
-		for(Node child : node)
-			drawEdges(g, child, level + 1, xOffset, yOffset);
-	}
-
-	private void drawEdge(Graphics g, Node from, Node to, int position, int slots, int xOffset, int yOffset){
-
-		int x = from.getX();
-		int y = from.getY();
-		int w = from.getWidth(style);
-		int h = from.getHeight(style);
-		
-		int xc = to.getX();
-		int yc = to.getY();
-		int wc = to.getWidth(style);
-		int hc = to.getHeight(style);
-		
-		int xs = 0, ys = 0, xe = 0, ye = 0;
-		
-		switch(style.getOrientation()){
-			case NORTH:
-				xs = x + w / 2;
-				ys = y + h;
-				xe = xc + wc / 2;
-				ye = yc;
-				break;
-			case SOUTH:
-				xs = x + w / 2;
-				ys = y;
-				xe = xc + wc / 2;
-				ye = yc + hc;
-				break;
-			case EAST:
-				xs = x + w;
-				ys = y + h/2;
-				xe = xc;
-				ye = yc + hc/2;
-				break;
-			case WEST:
-				xs = x;
-				ys = y + h/2;
-				xe = xc + wc;
-				ye = yc + hc/2;
-				break;
-		}
-		
-		
-		g.drawLine(xs + xOffset, ys + yOffset, xe + xOffset, ye + yOffset);
-
-		
-	}
-
-	private void drawNodes(Graphics g, Node node, int level, int xOffset, int yOffset) {
+	private void drawNodes(Graphics g, Node node, int level) {
 		if(node == null || node.isPlaceHolder())
 			return;
 
 		if(level > style.getMaxDepth())
 			return;
 		
-		drawNode(g, node, xOffset, yOffset);
+		drawNode(g, node);
 		for(Node child : node)
-			drawNodes(g, child, level + 1, xOffset, yOffset);
+			drawNodes(g, child, level + 1);
 	}
 	
-	private void drawNode(Graphics g, Node node, int xOffset, int yOffset) {
-		int x = node.getX();
-		int y = node.getY();
-		int w = node.getWidth(style);
-		int h = node.getHeight(style);
+	private void drawNode(Graphics g, Node node) {
+		Rectangle r = node.getNodeArea(style, offset);
+		Rectangle l = node.getLabelArea(style, offset);
 		
 		Shape shape = style.getShape(node);
 		switch(shape){
-			case RECTANGLE:			g.drawRect(x, y, w, h); break;
-			case ROUNDED_RECTANGLE:	g.drawRoundRect(x, y, w, h, Style.ARC_SIZE, Style.ARC_SIZE); break;
+			case RECTANGLE:			g.drawRect(r.x, r.y, r.width, r.height); break;
+			case ROUNDED_RECTANGLE:	g.drawRoundRect(r.x, r.y, r.width, r.height, Style.ARC_SIZE, Style.ARC_SIZE); break;
 		}		
-		drawPointerBoxes(g, node, x, y, w, h, shape);		
-		drawLabel(g, node);		
+		drawPointerBoxes(g, node, shape, r.x, r.y, r.width, r.height);		
+		drawLabel(g, node, l.x, l.y, l.width, l.height);		
 	}
 
-	private void drawPointerBoxes(Graphics g, Node node, int x, int y, int w,
-			int h, Shape shape) {
+	private void drawPointerBoxes(Graphics g, Node node, Shape shape, int x, int y,
+			int w, int h) {
 		if(style.hasPointerBoxes()){
-			boolean[] childrenState = node.getChildrenState();
-			int boxes = childrenState.length;
+			int boxes = node.getChildrenSlots();
 			int y1 = 0, y2 = 0, x1 = 0, x2 = 0, yp = 0, xp = 0, b = Style.POINTER_BOX_HEIGHT;
 			switch(style.getOrientation()){
 				case NORTH: y1 = y + h - b; y2 = y1 + b; x1 = x; xp = w / boxes; break;
@@ -256,14 +164,14 @@ public class TreePanel<T> extends JPanel implements Observer{
 			for(int i = 0; i < boxes; i++)
 				if(style.hasVerticalOrientation()){
 					x2 = x1 + xp;
-					drawHorizontalPointerBox(g, y1, y2, x1, x2, childrenState[i], i, boxes);
+					drawHorizontalPointerBox(g, y1, y2, x1, x2, node.hasChild(i), i, boxes);
 					x1 = x2;
 				}else{ // style.hasHorozontalOrientation()
 					y2 = y1 + yp;
-					drawVerticalPointerBox(g, x1, x2, y1, y2, childrenState[i], i, boxes);
+					drawVerticalPointerBox(g, x1, x2, y1, y2, node.hasChild(i), i, boxes);
 					y1 = y2;
 				}
-			fixShape(g, shape, x, y, w, h, childrenState);
+			fixShape(g, node, shape, x, y, w, h);
 		}
 	}
 
@@ -285,10 +193,10 @@ public class TreePanel<T> extends JPanel implements Observer{
 		g.drawLine(x1, y2, x2, y1);
 	}
 
-	private void fixShape(Graphics g, Shape shape, int x, int y, int w, int h, boolean[] childrenState) {
+	private void fixShape(Graphics g, Node node, Shape shape, int x, int y, int w, int h) {
 		if(shape == Shape.RECTANGLE)
 			return;
-		if(childrenState[0] && childrenState[childrenState.length - 1])
+		if(node.hasChild(0) && node.hasChild(node.getChildrenSlots() - 1))
 			return;
 		
 		Graphics2D g2 = (Graphics2D) g;
@@ -304,39 +212,107 @@ public class TreePanel<T> extends JPanel implements Observer{
 		g2.setColor(Color.BLACK);
 	}
 
-	private void drawLabel(Graphics g, Node node) {
+	private void drawLabel(Graphics g, Node node, int x, int y, int w, int h) {
+		g.setColor(Color.YELLOW);
+		g.fillRect(x, y, w, h);
+		g.setColor(Color.BLACK);
+		
 		FontMetrics metrics = g.getFontMetrics();
-		String[] label = style.getLabel(g, node);
-		Rectangle area = style.getDrawingArea(node);
+		Label label = node.getAdjustedLabel(style);
 		
-//		g.setColor(Color.YELLOW);
-		int dx = area.x;
-		int dy = area.y;
-		int dw = area.width;
-		int dh = area.height;
-//		g.fillRect(dx, dy, dw, dh);
-//		g.setColor(Color.BLACK);
+		x = x + (w - label.getWidth()) / 2;
+		y = y + (h - label.getHeight()) / 2;
 		
-		dy = dy + metrics.getAscent();
-		for(int i = 0; i < label.length; i++){
-			String line = label[i];
-			int p = (dw - metrics.stringWidth(line))/2;
-			g.drawString(line, dx + p, dy);
-			dy = dy + metrics.getHeight();
+		y = y + metrics.getAscent(); 
+		for(String line : label.getLines()){
+			g.drawString(line, x, y);
+			y = y + metrics.getHeight();
 		}
+		
+//		FontMetrics metrics = g.getFontMetrics();
+//		String[] label = style.getLabel(g, node);
+//		Rectangle area = style.getDrawingArea(node);
+//		
+////		g.setColor(Color.YELLOW);
+//		int dx = area.x;
+//		int dy = area.y;
+//		int dw = area.width;
+//		int dh = area.height;
+////		g.fillRect(dx, dy, dw, dh);
+////		g.setColor(Color.BLACK);
+//		
+//		dy = dy + metrics.getAscent();
+//		for(int i = 0; i < label.length; i++){
+//			String line = label[i];
+//			int p = (dw - metrics.stringWidth(line))/2;
+//			g.drawString(line, dx + p, dy);
+//			dy = dy + metrics.getHeight();
+//		}
 	}
+		
+	////////////// Edges ///////////////
 
-	@Override
-	public void update(Observable o, Object arg) {
-		if(!(o instanceof Style && arg instanceof Action))
-			return;
-		
-		switch((Action)arg){
-			case REPAINT:  		break;
-//			case RECALCULATE:	layoutAlgorithm.recalculateTree(style, root); break;
-			case REBUILD:		layoutAlgorithm.positionTree(style, root); break;
+		private void drawEdges(Graphics g, Node node, int level) {
+			if(node == null || node.isPlaceHolder())
+				return;
+					
+			if(level >= style.getMaxDepth())
+				return;
+	
+			int slots = node.getChildrenSlots(), position = 0;
+			for(Node child : node)
+				if(child != null && !child.isPlaceHolder())
+					drawEdge(g, node, child, position, slots);
+			
+			for(Node child : node)
+				drawEdges(g, child, level + 1);
 		}
-		this.repaint();
-	}
+
+			
+		private void drawEdge(Graphics g, Node from, Node to, int position, int slots){
+	
+			int x = from.getX();
+			int y = from.getY();
+			int w = from.getWidth(style);
+			int h = from.getHeight(style);
+			
+			int xc = to.getX();
+			int yc = to.getY();
+			int wc = to.getWidth(style);
+			int hc = to.getHeight(style);
+			
+			int xs = 0, ys = 0, xe = 0, ye = 0;
+			
+			switch(style.getOrientation()){
+				case NORTH:
+					xs = x + w / 2;
+					ys = y + h;
+					xe = xc + wc / 2;
+					ye = yc;
+					break;
+				case SOUTH:
+					xs = x + w / 2;
+					ys = y;
+					xe = xc + wc / 2;
+					ye = yc + hc;
+					break;
+				case EAST:
+					xs = x + w;
+					ys = y + h/2;
+					xe = xc;
+					ye = yc + hc/2;
+					break;
+				case WEST:
+					xs = x;
+					ys = y + h/2;
+					xe = xc + wc;
+					ye = yc + hc/2;
+					break;
+			}
+			
+			int xOff = offset.getX();
+			int yOff = offset.getY();
+			g.drawLine(xs + xOff, ys + yOff, xe + xOff, ye + yOff);
+		}
 
 }

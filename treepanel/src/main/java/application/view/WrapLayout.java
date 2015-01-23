@@ -1,4 +1,4 @@
-package samples.panel;
+package application.view;
 
 import java.awt.*;
 

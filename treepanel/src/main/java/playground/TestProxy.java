@@ -1,4 +1,4 @@
-package samples.general;
+package playground;
 
 import java.awt.AWTEvent;
 import java.awt.event.ActionListener;

@@ -1,6 +1,5 @@
 package trees.layout;
 
-import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,8 +7,6 @@ import trees.panel.style.Style;
 
 public class LayoutAlgorithm {
 	
-	private Root root;
-
 	private Style style;
 
 	// A fixed distance used in the final walk of the tree to determine 
@@ -19,7 +16,7 @@ public class LayoutAlgorithm {
 	
 	// A list of previous nodes at each level.
 	private Map<Integer, Node> previousNodes = new HashMap<>();
-
+	
 	public boolean positionTree (Style style, Root root){
 		return this.positionTree(style, root, true);
 	}
@@ -31,12 +28,11 @@ public class LayoutAlgorithm {
 	private boolean positionTree (Style style, Root root, boolean build){
 		if(style == null)
 			throw new NullPointerException("style must not be null");
-
-		this.style = style;
-		this.root = root;
 		
 		if(root == null)
 			return true;
+
+		this.style = style;
 		
 		if(build){ // skip inital building process
 			previousNodes.clear();
@@ -44,7 +40,41 @@ public class LayoutAlgorithm {
 			preliminaryPositioning(root, 0);
 		}
 		
+		// Determine how to adjust all the nodes with respect 
+		// to the location of the root.			
+		switch(this.style.getOrientation()){
+			case NORTH:
+				xOffset = 0;
+				yOffset = 0;
+				break;
+			case SOUTH:
+				xOffset = 0;
+				yOffset = getDrawingDepth(root, 0) * style.getLevelSepartion();
+				break;
+			case EAST: 
+				xOffset = 0;
+				yOffset = 0;
+				break;
+			case WEST:
+				xOffset = getDrawingDepth(root, 0) * style.getLevelSepartion();
+				yOffset = 0;
+				break;
+		}
+		
 		return finalPositioning(root, 0, 0);
+	}
+
+	private int getDrawingDepth(Node node, int level){
+		int depth = level;
+		if(level < style.getMaxDepth()){
+			for(Node child : node)
+				if(child != null){
+					int subtreeDepth = getDrawingDepth(child, level + 1);
+					if(subtreeDepth > depth)
+						depth = subtreeDepth;
+				}
+		}
+		return depth;
 	}
 
 	private void preliminaryPositioning(Node node, int level) {
@@ -217,7 +247,7 @@ public class LayoutAlgorithm {
 		node.yCoordinate = yTemp;
 		
 		boolean ok = true;
-		if (node.hasChild()) // Apply the Modifier value for this node to all its offspring.
+		if (node.hasChildren()) // Apply the Modifier value for this node to all its offspring.
 			ok = finalPositioning (node.getFirstChild(), level + 1, modsum + node.modifier);
 		if (ok && node.hasRightSibling())
 			ok = finalPositioning(node.getRightSibling(), level, modsum);
@@ -231,62 +261,4 @@ public class LayoutAlgorithm {
 		return (xValue >= 0 && yValue >= 0);
 	}
 
-	public void  setOffsets(int panelWidth, int panelHeight){
-		Rectangle area = root.getTreeArea(style);
-
-		int xOffset = 0, yOffset = 0;		
-
-		switch(this.style.getOrientation()){
-			case NORTH:
-				xOffset = 0;
-				yOffset = 0;
-				break;
-			case SOUTH:
-				xOffset = 0;
-				yOffset = getDrawingDepth(root, 0) * style.getLevelSepartion();
-				break;
-			case EAST: 
-				xOffset = 0;
-				yOffset = 0;
-				break;
-			case WEST:
-				xOffset = getDrawingDepth(root, 0) * style.getLevelSepartion();
-				yOffset = 0;
-				break;
-		}
-		
-		switch(style.getHorizontalAlignment()){
-			case LEFT:			break;
-			case ROOT_CENTER:	xOffset = (panelWidth - root.getWidth(style))/2; break;
-			case TREE_CENTER:	xOffset = xOffset + (panelWidth - area.width) / 2; break;
-			case RIGHT:			xOffset = xOffset + panelWidth - area.width - 1; break;
-			default:			;
-		}
-
-		switch(style.getVerticalAlignment()){
-			case TOP:			break;
-			case ROOT_CENTER:	yOffset = (panelHeight - root.getHeight(style)) / 2; break;
-			case TREE_CENTER:	yOffset = yOffset + (panelHeight - area.height) / 2; break;
-			case BOTTOM:		yOffset = yOffset + panelHeight - area.height - 1; break;
-			default:			;
-		}
-		
-		this.xOffset = xOffset;
-		this.yOffset = yOffset;
-				
-		this.recalculateTree(style, root);
-	}
-
-	private int getDrawingDepth(Node node, int level){
-		int depth = level;
-		if(level < style.getMaxDepth()){
-			for(Node child : node)
-				if(child != null){
-					int subtreeDepth = getDrawingDepth(child, level + 1);
-					if(subtreeDepth > depth)
-						depth = subtreeDepth;
-				}
-		}
-		return depth;
-	}
 }

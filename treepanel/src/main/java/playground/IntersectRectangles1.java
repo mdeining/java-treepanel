@@ -1,16 +1,10 @@
-package samples.general;
+package playground;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.Area;
-import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
-import java.awt.geom.RoundRectangle2D.Double;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -19,7 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 @SuppressWarnings("serial")
-public class IntersectRectangles2 extends JFrame {
+public class IntersectRectangles1 extends JFrame {
 	
 	private static final int WIDTH = 800, HEIGHT = 600;
 
@@ -27,7 +21,7 @@ public class IntersectRectangles2 extends JFrame {
 	private JTextField textField;
 	private JButton button;
 
-	public IntersectRectangles2(){
+	public IntersectRectangles1(){
 		super("Frame Template");
 		
 		// create instances of functional widgets here
@@ -57,34 +51,13 @@ public class IntersectRectangles2 extends JFrame {
 			protected void paintComponent(Graphics g) {
 				super.paintComponent(g);
 				
+				double factor = 1 - Math.sqrt(2) / 2;
 				int dia = 50;
+				int offset = (int)(dia/2 * factor) + 1;
 				
 				int x = 10, y = 20, w = 200, h = 100;
 				
-//				Rectangle r = new Rectangle(x, y, w, h);
-				Graphics2D g2 = (Graphics2D) g;
-				
-				Double rr = new RoundRectangle2D.Double();
-				rr.setRoundRect(x, y, w + 1, h + 1, dia, dia);
-				
-//				g2.draw(rr);
-				
-				java.awt.geom.Rectangle2D.Double r = new Rectangle2D.Double(x, y, w + 1, h + 1);
-				
-//				g2.setColor(Color.YELLOW);
-//				g2.fill(r);
-				
-//				g2.setColor(Color.BLACK);
-//				g2.draw(rr);
-
-				g.setColor(Color.BLACK);
-				g2.drawRoundRect(x, y, w, h, dia, dia);
-				
-				Area a1 = new Area(rr);
-				Area a2 = new Area(r);
-				
-//				a2.intersect(a1);
-				
+				g.drawRoundRect(x, y, w, h, dia, dia);
 
 //				g.drawRect(x, y, w, h);
 //				g.drawOval(x, y, dia, dia);
@@ -95,12 +68,9 @@ public class IntersectRectangles2 extends JFrame {
 			
 				
 				
-				g.drawLine(x, y, x + w, y + h);
-				g.drawLine(x, y + h, x + w, y);
+				g.drawLine(x + offset, y + offset, x + w - offset, y + h - offset);
+				g.drawLine(x + offset, y + h - offset, x + w - offset, y + offset);
 				
-				a2.subtract(a1);
-				g2.setColor(Color.WHITE);
-				g2.fill(a2);
 				
 			}						
 		};
@@ -143,6 +113,6 @@ public class IntersectRectangles2 extends JFrame {
 	}
 	
 	public static void main(String[] args) {
-		new IntersectRectangles2();	
+		new IntersectRectangles1();	
 	}
 }

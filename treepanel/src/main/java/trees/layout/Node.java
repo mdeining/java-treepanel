@@ -1,5 +1,6 @@
 package trees.layout;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import trees.acessing.AbstractNode;
+import trees.panel.PanelOffset;
 import trees.panel.style.Style;
 
 public abstract class Node implements Iterable<Node> {
@@ -15,14 +17,17 @@ public abstract class Node implements Iterable<Node> {
 	
 	private AbstractNode wrappedNode;
 	private List<Node> children = new ArrayList<>();
-	private boolean[] childrenState = new boolean[0];
+	private boolean[] hasChild = new boolean[0];
 
 	protected Node parent, leftNeighbor;	
 	protected int xCoordinate, yCoordinate, prelim, modifier;
+	
+	private Label label;
 
 	public Node(AbstractNode wrappedNode) {
 		super();
 		this.wrappedNode = wrappedNode;
+		this.label = new Label(this);
 	}
 
 	public int getX() {
@@ -31,6 +36,14 @@ public abstract class Node implements Iterable<Node> {
 
 	public int getY() {
 		return yCoordinate;
+	}
+
+	public int getX(int offset) {
+		return xCoordinate + offset;
+	}
+
+	public int getY(int offset) {
+		return yCoordinate + offset;
 	}
 
 	public int getPrelim() {
@@ -50,15 +63,20 @@ public abstract class Node implements Iterable<Node> {
 	}
 	
 	public void add(Node ... children){
-		int i = childrenState.length;
-		childrenState = Arrays.copyOf(childrenState, childrenState.length + children.length);
+		int i = hasChild.length;
+		hasChild = Arrays.copyOf(hasChild, hasChild.length + children.length);
 		for(Node child : children){
 			this.children.add(child);
 			if(child != null)
 				child.parent = this;
-			childrenState[i++] = (child != null && !child.isPlaceHolder());
+			hasChild[i++] = (child != null && !child.isPlaceHolder());
 		}
 		
+	}
+
+	public Label getAdjustedLabel(Style style) {
+		label.adjust(style);
+		return label;
 	}
 
 	public String getLabel() {
@@ -78,6 +96,7 @@ public abstract class Node implements Iterable<Node> {
 	}
 	
 	protected void initialize(){
+		label.initialize();
 		leftNeighbor = null;
 		prelim = 0;
 		modifier = 0;
@@ -140,14 +159,22 @@ public abstract class Node implements Iterable<Node> {
 	}
 
 	public boolean isLeaf() {
-		return !hasChild();
+		return !hasChildren();
 	}
 
-	public boolean hasChild() {
+	public boolean hasChildren() {
 		for(Node child : children)
 			if(child != null)
 				return true;
 		return false;
+	}
+
+	public boolean hasChild(int index) {
+		return hasChild[index];
+	}
+	
+	public int getChildrenSlots(){
+		return hasChild.length;
 	}
 
 	// Size of the right half of the node
@@ -176,30 +203,59 @@ public abstract class Node implements Iterable<Node> {
 		return style.getWidth(this);
 	}
 	
-	protected Rectangle getTreeArea(Style style){
-		
-		int x = this.getX();
-		int y = this.getY();		
-		int w = this.getWidth(style);
-		int h = this.getHeight(style);
+	public Rectangle getTreeArea(Style style){
+		// By definition, the coordinates are without offset
+		Point p = this.getRightmostPoint(style);
+		Rectangle area = new Rectangle(0, 0, p.x, p.y);
+		return area;		
+	}
+	
+	private Point getRightmostPoint(Style style) {
+		int x = this.getX() + this.getWidth(style);
+		int y = this.getY() + this.getHeight(style);
 		
 		for(Node child : children)
-			if(child != null){
-				Rectangle r = child.getTreeArea(style);
-				if(r.x < x)			x = r.x;
-				if(r.y < y)			y = r.y;
-				if(r.width > w)		w = r.width;
-				if(r.height > h)	h = r.height;
+			if(child != null){				
+				Point p = child.getRightmostPoint(style);				
+				if(p.x > x) x = p.x;
+				if(p.y > y) y = p.y;			
 			}
-		Rectangle r = new Rectangle(x, y, w, h);
-		return r;
+		Point p = new Point(x, y);
+		return p;
+	}
+	
+	public Rectangle getNodeArea(Style style){
+		return new Rectangle(xCoordinate, yCoordinate, style.getWidth(this), style.getHeight(this));
+	}
+
+	public Rectangle getNodeArea(Style style, PanelOffset<?> offset){
+		return new Rectangle(xCoordinate + offset.getX(), yCoordinate + offset.getY(), style.getWidth(this), style.getHeight(this));
+	}
+
+	public Rectangle getLabelArea(Style style, PanelOffset<?> offset){
+		Rectangle area = this.getLabelArea(style);
+		return new Rectangle(area.x + offset.getX(), area.y + offset.getY(), area.width, area.height);
+	}
+
+	public Rectangle getLabelArea(Style style){
+		int xOff = Style.MARGIN;
+		int yOff = Style.MARGIN;
+		int width = style.getWidth(this) - 2 * Style.MARGIN;
+		int height = style.getHeight(this) - 2 * Style.MARGIN;
+		if(style.hasPointerBoxes(this))
+			switch(style.getOrientation()){
+				case NORTH:	height = height - Style.POINTER_BOX_HEIGHT; break;
+				case SOUTH:	height = height - Style.POINTER_BOX_HEIGHT; 
+							yOff = yOff + Style.POINTER_BOX_HEIGHT; break;
+				case EAST:	width = width - Style.POINTER_BOX_HEIGHT; break;
+				case WEST:	width = width - Style.POINTER_BOX_HEIGHT; 
+							xOff = xOff + Style.POINTER_BOX_HEIGHT; break;
+			}
+		return new Rectangle(xCoordinate + xOff, yCoordinate + yOff, width, height);
 	}
 
 	public boolean isPlaceHolder(){
 		return false;
-	}
+	}	
 
-	public boolean[] getChildrenState() {
-		return childrenState;
-	}
 }

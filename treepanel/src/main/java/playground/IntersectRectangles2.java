@@ -1,17 +1,16 @@
-package samples.general;
+package playground;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.font.FontRenderContext;
-import java.awt.font.GlyphVector;
+import java.awt.geom.Area;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
+import java.awt.geom.RoundRectangle2D.Double;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -20,7 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 @SuppressWarnings("serial")
-public class FrameStringMetrics extends JFrame {
+public class IntersectRectangles2 extends JFrame {
 	
 	private static final int WIDTH = 800, HEIGHT = 600;
 
@@ -28,7 +27,7 @@ public class FrameStringMetrics extends JFrame {
 	private JTextField textField;
 	private JButton button;
 
-	public FrameStringMetrics(){
+	public IntersectRectangles2(){
 		super("Frame Template");
 		
 		// create instances of functional widgets here
@@ -58,54 +57,54 @@ public class FrameStringMetrics extends JFrame {
 			protected void paintComponent(Graphics g) {
 				super.paintComponent(g);
 				
-//				g.setFont(new Font("Helvetica", Font.PLAIN, 60));
-//				
-//				int x = 10, y = 20, w = 200, h = 100;
-//				
-//				g.drawRect(x, y, w, h);
-//
-//				
-//				FontMetrics fm = g.getFontMetrics();
-//				String str = "XXXX";
-//				g.drawString(str, x, y + fm.getAscent());
-//				g.drawLine(x, y + fm.getHeight() - fm.getDescent(), x + w, y + fm.getHeight() - fm.getDescent());
-//				
-//				
-//				Graphics2D g2 = (Graphics2D) g;
+				int dia = 50;
 				
-		        // must be called before getTextBounds()
-		        g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 28));
+				int x = 10, y = 20, w = 200, h = 100;
+				
+//				Rectangle r = new Rectangle(x, y, w, h);
+				Graphics2D g2 = (Graphics2D) g;
+				
+				Double rr = new RoundRectangle2D.Double();
+				rr.setRoundRect(x, y, w + 1, h + 1, dia, dia);
+				
+//				g2.draw(rr);
+				
+				java.awt.geom.Rectangle2D.Double r = new Rectangle2D.Double(x, y, w + 1, h + 1);
+				
+//				g2.setColor(Color.YELLOW);
+//				g2.fill(r);
+				
+//				g2.setColor(Color.BLACK);
+//				g2.draw(rr);
 
-		        Graphics2D g2 = (Graphics2D) g;
+				g.setColor(Color.BLACK);
+				g2.drawRoundRect(x, y, w, h, dia, dia);
+				
+				Area a1 = new Area(rr);
+				Area a2 = new Area(r);
+				
+//				a2.intersect(a1);
+				
 
-			        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-			                RenderingHints.VALUE_ANTIALIAS_ON);
-
-
-			        String str = "Mxxxxxxy";
-			        float x = 140, y = 128;
-
-			        Rectangle bounds = getStringBounds(g2, str, x, y);
-
-			        g2.setColor(Color.red);
-			        g2.drawString(str, x, y);
-
-			        g2.setColor(Color.blue);
-			        g2.draw(bounds);
-
-			        g2.dispose();
+//				g.drawRect(x, y, w, h);
+//				g.drawOval(x, y, dia, dia);
+//				
+//				g.drawOval(x + w - dia, y, dia, dia);
+//				g.drawOval(x, y + h - dia, dia, dia);
+//				g.drawOval(x + w - dia, y + h - dia, dia, dia);
+			
+				
+				
+				g.drawLine(x, y, x + w, y + h);
+				g.drawLine(x, y + h, x + w, y);
+				
+				a2.subtract(a1);
+				g2.setColor(Color.WHITE);
+				g2.fill(a2);
+				
 			}						
 		};
 	}
-	
-    private Rectangle getStringBounds(Graphics2D g2, String str, float x, float y) {
-        FontRenderContext frc = g2.getFontRenderContext();
-        GlyphVector gv = g2.getFont().createGlyphVector(frc, str);
-        return gv.getPixelBounds(null, x, y);
-    }
-
-    
-    
 	
 	private void initializeWidgets() {
 		// initialize functional widgets here
@@ -144,6 +143,6 @@ public class FrameStringMetrics extends JFrame {
 	}
 	
 	public static void main(String[] args) {
-		new FrameStringMetrics();	
+		new IntersectRectangles2();	
 	}
 }

@@ -1,4 +1,4 @@
-package samples.panel;
+package application.view;
 
 import static trees.panel.style.Alignment.*;
 import static trees.panel.style.Orientation.*;
@@ -20,18 +20,18 @@ import javax.swing.JSpinner;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import application.model.Root;
+import application.model.Sample;
 import trees.panel.style.Alignment;
 import trees.panel.style.Fixed;
 import trees.panel.style.Orientation;
 import trees.panel.style.Shape;
 import trees.panel.style.Style;
 import trees.panel.TreePanel;
-import samples.tree.Root;
-import samples.tree.Sample;
 
 
 @SuppressWarnings("serial")
-public class TreePaint extends JFrame {
+public class TreeView extends JFrame {
 	
 	private static final int INITIAL_DEPTH = 10;
 
@@ -52,17 +52,19 @@ public class TreePaint extends JFrame {
 	private TreePanel<Root> treePanel;
 
 
-	public TreePaint(){
+	public TreeView(){
 		super("Frame Template");
 		
 		// The Model
 		
-		Sample s = new samples.tree.Sample();
-//		root = s.sample();
-////		root.add("xxxxxxxxxxxxx\nyyyyyy\nzz");
+		Sample s = new application.model.Sample();
+		root = s.sample();
+		root.add("123\nABCDEFGH\nxyz");
 //		
 //		root = new Root("XXXXXXXXXX\nyyyyyy\nzz");
-		root = new Root("B"); root.add("A"); root.add("C");
+//		root = new Root("B"); root.add("A"); root.add("C");		
+//		root = new Root("M"); root.add("P");
+//		root = new Root("M");
 				
 		treePanel = new TreePanel<Root>(root);
 
@@ -133,7 +135,7 @@ public class TreePaint extends JFrame {
 		style.setPointerBoxes(true);
 		style.setLevelSepartion(80);
 		
-		style.setSize(new Fixed(60, 40));
+		style.setSize(new Fixed(60, 50));
 	}
 	
 	private JPanel createWidgetLayout() {
@@ -279,7 +281,7 @@ public class TreePaint extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String value = JOptionPane.showInputDialog(TreePaint.this, "Neues Element");
+				String value = JOptionPane.showInputDialog(TreeView.this, "Neues Element");
 					if(value != null && !value.trim().equals("")){
 						root.add(value);
 						treePanel.setTree(root);
@@ -292,6 +294,6 @@ public class TreePaint extends JFrame {
 	
 
 	public static void main(String[] args) {
-		new TreePaint();	
+		new TreeView();	
 	}
 }

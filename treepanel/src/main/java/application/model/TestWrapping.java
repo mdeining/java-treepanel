@@ -1,4 +1,4 @@
-package samples.tree;
+package application.model;
 
 import trees.acessing.TreeWrapper;
 import trees.layout.Root;
@@ -6,8 +6,8 @@ import trees.layout.Root;
 public class TestWrapping {
 
 	public static void main(String[] args) {
-		samples.tree.Sample s = new samples.tree.Sample();
-		samples.tree.Root r = s.sample();
+		application.model.Sample s = new application.model.Sample();
+		application.model.Root r = s.sample();
 		System.out.println(r);
 		
 //		NodeWrapper wrapper1 = new NodeWrapper(r);

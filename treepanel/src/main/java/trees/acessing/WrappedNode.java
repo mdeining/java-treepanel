@@ -36,18 +36,21 @@ public class WrappedNode extends AbstractNode{
 	
 	@Override
 	public String getLabel(){
+		if(labelers.isEmpty())
+			return node.toString();
+		
+		String label = null;
+		
 		try {
 			Method method = labelers.get(0);
 			Object result = method.invoke(node);
-			String label = result.toString(); 
-			
+			label = result.toString(); 			
 			for(int i = 1; i < labelers.size(); i++)
 				label = label + "\n" + labelers.get(i).invoke(node);
-			return label;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return node.toString();
+		return label;
 	}
 
 	public boolean hasDescendants() {
@@ -211,13 +214,6 @@ public class WrappedNode extends AbstractNode{
 			if(method.isAnnotationPresent(Label.class) && method.getParameterTypes().length == 0 && method.getReturnType() != void.class)
 				labelers.add(method);
 				
-		if(labelers.isEmpty())
-			try {
-				Method toString = cls.getMethod("toString");
-				labelers.add(toString);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
 		return labelers;
 	}
 

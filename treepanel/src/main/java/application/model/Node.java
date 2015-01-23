@@ -1,4 +1,4 @@
-package samples.tree;
+package application.model;
 
 import trees.acessing.Nodes;
 import trees.acessing.Label;

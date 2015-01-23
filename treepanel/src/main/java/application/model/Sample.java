@@ -1,4 +1,4 @@
-package samples.tree;
+package application.model;
 
 public class Sample {
 	
