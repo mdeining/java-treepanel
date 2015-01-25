@@ -36,9 +36,10 @@ public class LayoutAlgorithm {
 		
 		if(build){ // skip inital building process
 			previousNodes.clear();
-			root.initialize();
+			root.initialize(true);
 			preliminaryPositioning(root, 0);
-		}
+		}else
+			root.initialize(false);
 		
 		// Determine how to adjust all the nodes with respect 
 		// to the location of the root.			

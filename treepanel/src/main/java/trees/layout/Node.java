@@ -1,5 +1,6 @@
 package trees.layout;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -8,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import trees.acessing.AbstractNode;
-import trees.panel.PanelOffset;
 import trees.panel.style.Style;
 
 public abstract class Node implements Iterable<Node> {
@@ -95,17 +95,20 @@ public abstract class Node implements Iterable<Node> {
 		return children.iterator();
 	}
 	
-	protected void initialize(){
+	protected void initialize(boolean complete){
 		label.initialize();
-		leftNeighbor = null;
-		prelim = 0;
-		modifier = 0;
 		xCoordinate = 0;
 		yCoordinate = 0;
+
+		if(complete){
+			leftNeighbor = null;
+			prelim = 0;
+			modifier = 0;
+		}
 		
 		for(Node child : children)
 			if(child != null)
-				child.initialize();
+				child.initialize(complete);
 	}
 	
 	// 	The current node's leftmost offspring
@@ -228,20 +231,20 @@ public abstract class Node implements Iterable<Node> {
 		return new Rectangle(xCoordinate, yCoordinate, style.getWidth(this), style.getHeight(this));
 	}
 
-	public Rectangle getNodeArea(Style style, PanelOffset<?> offset){
-		return new Rectangle(xCoordinate + offset.getX(), yCoordinate + offset.getY(), style.getWidth(this), style.getHeight(this));
+	public Rectangle getNodeArea(Style style, Dimension offset){
+		return new Rectangle(xCoordinate + offset.width, yCoordinate + offset.height, style.getWidth(this), style.getHeight(this));
 	}
 
-	public Rectangle getLabelArea(Style style, PanelOffset<?> offset){
+	public Rectangle getLabelArea(Style style, Dimension offset){
 		Rectangle area = this.getLabelArea(style);
-		return new Rectangle(area.x + offset.getX(), area.y + offset.getY(), area.width, area.height);
+		return new Rectangle(area.x + offset.width, area.y + offset.height, area.width, area.height);
 	}
 
 	public Rectangle getLabelArea(Style style){
-		int xOff = Style.MARGIN;
-		int yOff = Style.MARGIN;
-		int width = style.getWidth(this) - 2 * Style.MARGIN;
-		int height = style.getHeight(this) - 2 * Style.MARGIN;
+		int xOff = Style.LABEL_MARGIN;
+		int yOff = Style.LABEL_MARGIN;
+		int width = style.getWidth(this) - 2 * Style.LABEL_MARGIN;
+		int height = style.getHeight(this) - 2 * Style.LABEL_MARGIN;
 		if(style.hasPointerBoxes(this))
 			switch(style.getOrientation()){
 				case NORTH:	height = height - Style.POINTER_BOX_HEIGHT; break;

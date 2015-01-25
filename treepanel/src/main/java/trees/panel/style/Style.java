@@ -1,9 +1,8 @@
 package trees.panel.style;
 
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Rectangle;
 import java.util.Observable;
 
 import javax.swing.JPanel;
@@ -15,13 +14,22 @@ import static trees.panel.style.Action.*;
 
 public class Style extends Observable{
 	
-	public static int MARGIN = 4;
+	public static final int TREE_MARGIN = 8;	
+
+	public static String ROOT = "root";
+	public static String NULL = "null";	
+	public static int ROOT_ARROW_LENGTH = 20;
+	public static int ROOT_ARROW_HEAD = 4;
 	
-	public static int POINTER_BOX_HEIGHT = 8;
-	public static int ARC_SIZE = 10;
+	public static final int POINTER_BOX_HEIGHT = 8;
+	public static final int ARC_SIZE = 10;
 	
-	private JPanel panel;
-	private FontMetrics defaultMetrics;
+	public static final int LABEL_MARGIN = 4;	
+	public static final Dimension MIN_DIMENSION = new Dimension(0, 0);
+	public static final Dimension MAX_DIMENSION = new Dimension(1920, 1080);
+	public static final String ETC = "...";
+
+	private static final JPanel panel = new JPanel();
 	
 	// General settings
 	private int maxDepth, siblingSeparation, 
@@ -32,49 +40,26 @@ public class Style extends Observable{
 	private boolean rootPointer;
 	
 	// Possible class specific settings
+	private Value<Font> font = new Value<>();
+	private Value<FontMetrics> metrics = new Value<>();
 	private Value<Boolean> pointerBoxes = new Value<>();
 	private Value<Shape> shape = new Value<>();	
 	private Value<Size> size = new Value<>();
+	private Value<Boolean> placeHolder = new Value<>();
 	
 	protected Style(){
 		super();
-		this.setDefaultMetrics();
+		this.setFont(panel.getFont());
 	}
 
-	protected Style(JPanel panel){
-		this();
-		this.panel = panel;
-	}
-
-	private void setDefaultMetrics() {
-		JPanel panel = new JPanel();
-		Font font = panel.getFont();
-		defaultMetrics = panel.getFontMetrics(font);
-	}
-	
 	private void notify(Action action){
 		this.setChanged();
 		this.notifyObservers(action);
 		this.clearChanged();
 	}
 	
-	public void setPanel(JPanel panel){
-		this.panel = panel;
-	}
+	//// Tree Geometry //////////////////////////////////
 	
-	public FontMetrics getFontMetrics() {
-		if(panel == null)
-			return defaultMetrics;
-		
-		Font font = panel.getFont();
-		FontMetrics metrics = panel.getFontMetrics(font);
-		return metrics;
-	}
-	
-	public Font getFont(){
-		return this.getFontMetrics().getFont();
-	}
-
 	public int getMaxDepth() {
 		return maxDepth;
 	}
@@ -110,7 +95,11 @@ public class Style extends Observable{
 		this.levelSepartion = levelSepartion;
 		this.notify(RECALCULATE);
 	}
+	
+	
 
+	//// Orientation & Alignment //////////////////////////////////
+	
 	public Orientation getOrientation() {
 		return orientation;
 	}
@@ -123,11 +112,11 @@ public class Style extends Observable{
 	}
 
 	public boolean hasVerticalOrientation(){
-		return orientation == Orientation.NORTH || orientation == Orientation.SOUTH;
+		return orientation == NORTH || orientation == SOUTH;
 	}
 	
 	public boolean hasHorizontalOrientation(){
-		return orientation == Orientation.EAST || orientation == Orientation.WEST;
+		return orientation == EAST || orientation == WEST;
 	}
 
 	public Alignment getHorizontalAlignment() {
@@ -151,18 +140,65 @@ public class Style extends Observable{
 		this.verticalAlignment = verticalAlignment;
 		this.notify(REALIGN);
 	}
-
-	public boolean hasRootPointer() {
-		return rootPointer;
+	
+	public void usePlaceHolder(boolean placeHolder){
+		this.usePlaceHolder(null, placeHolder);
 	}
 
-	public void setRootPointer(boolean rootPointer) {
-		this.rootPointer = rootPointer;
-		this.notify(REALIGN);
+	public void usePlaceHolder(Class<?> cls, boolean placeHolder){
+		if(cls == null)
+			this.placeHolder.setValue(placeHolder);
+		else
+			this.placeHolder.setValue(cls, placeHolder);
+		this.notify(RESET);
 	}
 	
-	/////////////////////////////////////////////////////////
+	public boolean usesPlaceHolder(Object obj){
+		return this.placeHolder.getValue(obj.getClass());
+	}
+
+	public boolean usesPlaceHolder(Class<?> cls){
+		return this.placeHolder.getValue(cls);
+	}
+
+	///// Fonts & FontMetrics ////////////////////////////////////////////////////
 	
+	public Font getFont(){
+		return this.font.getValue();
+	}
+	
+	public Font getFont(Object obj){
+		return this.font.getValue(obj.getClass());
+	}
+	
+	public void setFont(Font font){
+		this.setFont(null, font);
+	}
+	
+	public void setFont(Class<?> cls, Font font){
+		if(this.font.getValue(cls) == font)
+			return;
+		this.font.setValue(cls, font);
+		this.metrics.setValue(cls, panel.getFontMetrics(font));
+		Size size = this.size.getValue(cls);
+		if(size == null)
+			return;
+		if(size.isFixed())
+			this.notify(RECALCULATE);
+		else
+			this.notify(REBUILD);
+	}
+	
+	public FontMetrics getFontMetrics(){
+		return this.metrics.getValue();
+	}
+	
+	public FontMetrics getFontMetrics(Object obj){
+		return this.metrics.getValue(obj.getClass());
+	}
+	
+	//// Size /////////////////////////////////////////////
+
 	private Size getSize(Class<?> cls){
 		return size.getValue(cls);
 	}
@@ -172,13 +208,10 @@ public class Style extends Observable{
 	}
 	
 	public void setSize(Size size) {
-		size.setStyle(this);
-		this.size.setValue(size);
-		this.notify(REBUILD);
+		this.setSize(null, size);
 	}
 
 	public void setSize(Class<?> cls, Size size) {
-		size.setStyle(this);
 		this.size.setValue(cls, size);
 		this.notify(REBUILD);
 	}
@@ -202,13 +235,16 @@ public class Style extends Observable{
 		return height;		
 	}
 	
-//	public String[] getLabel(Graphics g, Node node){
-//		Size size = this.getSize(node.getNodeClass());
-//		String[] label = size.getLabel(g, node.getLabelArea(this, offset), node.getLabel());
-//		return label;		
-//	}
+	///// Node-Layout ////////////////////////////////////
+	
+	public boolean hasRootPointer() {
+		return rootPointer;
+	}
 
-	/////////////////////////////////////////
+	public void setRootPointer(boolean rootPointer) {
+		this.rootPointer = rootPointer;
+		this.notify(REALIGN);
+	}
 	
 	public boolean hasPointerBoxes() {
 		return pointerBoxes.getValue();
@@ -219,8 +255,7 @@ public class Style extends Observable{
 	}
 
 	public void setPointerBoxes(boolean pointerBoxes) {
-		this.pointerBoxes.setValue(pointerBoxes);
-		this.notify(REPAINT);
+		this.setPointerBoxes(null, pointerBoxes);
 	}
 
 	public void setPointerBoxes(Class<?> cls, boolean pointerBoxes) {
@@ -237,8 +272,7 @@ public class Style extends Observable{
 	}
 
 	public void setShape(Shape shape) {
-		this.shape.setValue(shape);
-		this.notify(REPAINT);
+		this.setShape(null, shape);
 	}
 	
 	public void setShape(Class<?> cls, Shape shape) {

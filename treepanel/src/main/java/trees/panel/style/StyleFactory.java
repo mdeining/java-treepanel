@@ -1,5 +1,7 @@
 package trees.panel.style;
 
+import trees.panel.style.sizes.Fixed;
+
 
 
 public class StyleFactory {
@@ -36,6 +38,7 @@ public class StyleFactory {
 		style.setPointerBoxes(POINTER_BOXES);
 		style.setShape(SHAPE);
 		style.setSize(SIZE);
+		style.usePlaceHolder(true);
 		return style;
 	}
 

@@ -4,24 +4,25 @@ import trees.layout.Child;
 import trees.layout.Node;
 import trees.layout.PlaceHolder;
 import trees.layout.Root;
+import trees.panel.style.Style;
 
 public class TreeWrapper {
 	
-	public Root wrap(Object object){
+	public Root wrap(Object object, Style style){
 		if(object == null)
 			return null;
 		
 		WrappedNode wrappedRoot = new WrappedNode(object);		
 		Root root = new Root(wrappedRoot);
 		
-		wrap(root, wrappedRoot);
+		wrap(root, wrappedRoot, style);
 		
 		return root;
 	}
 
-	private void wrap(Node node, WrappedNode wrappedNode){
+	private void wrap(Node node, WrappedNode wrappedNode, Style style){
 		Class<?> descendantClass = wrappedNode.getFirstDescendant();
-		boolean usePlaceHolders = (descendantClass != null);
+		boolean usePlaceHolders = (descendantClass != null && style.usesPlaceHolder(descendantClass));
 		for(Object object : wrappedNode.getDescendants())
 			if(object == null)
 				if(usePlaceHolders)
@@ -32,7 +33,7 @@ public class TreeWrapper {
 				WrappedNode wrappedChild = new WrappedNode(object);
 				Node child = new Child(wrappedChild);
 				node.add(child);
-				wrap(child, wrappedChild);
+				wrap(child, wrappedChild, style);
 			}		
 	}
 

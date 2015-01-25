@@ -1,8 +1,8 @@
-package trees.panel.style;
+package trees.panel.style.sizes;
 
 import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Rectangle;
+
+import trees.panel.style.Size;
 
 public class Fixed extends Size {
 	
@@ -35,6 +35,11 @@ public class Fixed extends Size {
 	}
 
 	@Override
+	public boolean isFixed() {
+		return true;
+	}
+
+	@Override
 	protected int getWidth(boolean hasVerticalOrientation, boolean hasPointerBoxes, Dimension label) {
 		// Ignore Label
 		return width;
@@ -45,10 +50,4 @@ public class Fixed extends Size {
 		// Ignore Label
 		return height;
 	}
-//
-//	@Override
-//	public String[] getLabel(FontMetrics metrics, Rectangle area, String label) {
-//		return null; //trimLabel(metrics, area, label);
-//	}
-	
 }

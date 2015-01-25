@@ -1,14 +1,23 @@
-package trees.panel.style;
+package trees.panel.style.sizes;
 
 import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Rectangle;
 
-public class Variable extends Size {
+import trees.panel.style.Size;
+import trees.panel.style.Style;
+
+public class MaxVariable extends Size {
 	
+	private int maxWidth, maxHeight;
+
+	public MaxVariable(int maxWidth, int maxHeight) {
+		super();
+		this.maxWidth = maxWidth;
+		this.maxHeight = maxHeight;
+	}
+
 	@Override
 	public boolean hasMaximum() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -18,7 +27,7 @@ public class Variable extends Size {
 
 	@Override
 	public Dimension getMaximum() {
-		return null;
+		return new Dimension(maxWidth, maxHeight);
 	}
 
 	@Override
@@ -27,24 +36,30 @@ public class Variable extends Size {
 	}
 
 	@Override
+	public boolean isFixed() {
+		return false;
+	}
+
+	@Override
 	protected int getWidth(boolean hasVerticalOrientation, boolean hasPointerBoxes, Dimension label) {
-		int width = label.width + 2 * Style.MARGIN;
+		int width = label.width + 2 * Style.LABEL_MARGIN;
 		if(!hasVerticalOrientation && hasPointerBoxes) 
 			width = width + Style.POINTER_BOX_HEIGHT;
-		return width;
+		if(width > maxWidth)
+			return maxWidth;
+		else
+			return width;
 	}
 
 	@Override
 	protected int getHeight(boolean hasVerticalOrientation, boolean hasPointerBoxes, Dimension label) {
-		int height = label.height + 2 * Style.MARGIN;
+		int height = label.height + 2 * Style.LABEL_MARGIN;
 		if(hasVerticalOrientation && hasPointerBoxes) 
 			height = height + Style.POINTER_BOX_HEIGHT;
-		return height;
+		if(height > maxHeight)
+			return maxHeight;
+		else
+			return height;
 	}
 
-//	@Override
-//	public String[] getLabel(FontMetrics metrics, Rectangle area, String label) {
-//		return null; //trimLabel(metrics, area, label);
-//	}
-	
 }

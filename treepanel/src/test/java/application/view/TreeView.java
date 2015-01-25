@@ -2,28 +2,33 @@ package application.view;
 
 import static trees.panel.style.Alignment.*;
 import static trees.panel.style.Orientation.*;
+import static trees.panel.style.Size.*;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import playground.WrapLayout;
 import application.model.Root;
 import application.model.Sample;
 import trees.panel.style.Alignment;
-import trees.panel.style.Fixed;
 import trees.panel.style.Orientation;
 import trees.panel.style.Shape;
 import trees.panel.style.Style;
@@ -48,6 +53,13 @@ public class TreeView extends JFrame {
 	private ButtonGroup horizontalGroup;
 	private JRadioButton topRb, bottomRb, vtreeRb, vrootRb;
 	
+	private SpinnerNumberModel fontSizeModel;
+	private JSpinner fontSizeSpinner;
+
+	private String[] fonts;
+	private JComboBox<String> fontFamilyBox;
+
+	
 	private Root root;
 	private TreePanel<Root> treePanel;
 
@@ -59,7 +71,7 @@ public class TreeView extends JFrame {
 		
 		Sample s = new application.model.Sample();
 		root = s.sample();
-		root.add("123\nABCDEFGH\nxyz");
+//		root.add("123\nABCDEFGH\nxyz");
 //		
 //		root = new Root("XXXXXXXXXX\nyyyyyy\nzz");
 //		root = new Root("B"); root.add("A"); root.add("C");		
@@ -67,6 +79,8 @@ public class TreeView extends JFrame {
 //		root = new Root("M");
 				
 		treePanel = new TreePanel<Root>(root);
+		
+//		treePanel = new TreePanel<Root>();
 
 		// create instances of functional widgets here
 		clearButton = new JButton("Clear");
@@ -131,11 +145,33 @@ public class TreeView extends JFrame {
 		depthSpinner.setValue(INITIAL_DEPTH);
 		
 		
+		int initFontSize = 12;
+	    String initFontFamily = "Arial";
+	    
+		fontSizeModel = new SpinnerNumberModel(initFontSize, 1, 128, 1);
+		fontSizeSpinner = new JSpinner(fontSizeModel);
+		fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+        fontFamilyBox = new JComboBox<>(fonts);
+ 		fontFamilyBox.setSelectedItem(initFontFamily);
+		
+		
 		style.setShape(Shape.ROUNDED_RECTANGLE);
 		style.setPointerBoxes(true);
-		style.setLevelSepartion(80);
+		style.setLevelSepartion(60);
 		
-		style.setSize(new Fixed(60, 50));
+//		style.setSize(FIXED(50, 30));
+//		style.setSize(FIXED(60, 50));
+//		style.setSize(VARIABLE());
+//		style.setSize(MAX_VARIABLE(60, 50));
+//		style.setSize(MIN_VARIABLE(40, 30));
+		style.setSize(RESTRICTED_VARIABLE(40, 30, 60, 50));
+		
+		style.setFont(new Font(initFontFamily, 0, initFontSize));
+		
+		style.setRootPointer(true);
+		style.usePlaceHolder(false);
+		
+		
 	}
 	
 	private JPanel createWidgetLayout() {
@@ -146,7 +182,7 @@ public class TreeView extends JFrame {
 		treePanel.setPreferredSize(new Dimension(WIDTH, HEIGHT));
 
 		
-		JPanel control = new JPanel(new GridLayout(3, 1));
+		JPanel controls = new JPanel(new GridLayout(4, 1));
 		
 		JPanel control1 = new JPanel(new WrapLayout());		
 			control1.add(northRb);
@@ -160,23 +196,28 @@ public class TreeView extends JFrame {
 			
 			control1.add(addButton);
 			
-		control.add(control1);
+		controls.add(control1);
 		
 		JPanel control2 = new JPanel(new WrapLayout());		
 			control2.add(leftRb);
 			control2.add(htreeRb);
 			control2.add(hrootRb);
 			control2.add(rightRb);		
-		control.add(control2);
+		controls.add(control2);
 
 		JPanel control3 = new JPanel(new WrapLayout());		
 			control3.add(topRb);
 			control3.add(vtreeRb);
 			control3.add(vrootRb);
 			control3.add(bottomRb);		
-		control.add(control3);
+		controls.add(control3);
+		
+		JPanel control4 = new JPanel(new WrapLayout());
+			control4.add(fontFamilyBox);	
+			control4.add(fontSizeSpinner);
+		controls.add(control4);
 
-		panel.add(control, BorderLayout.SOUTH);
+		panel.add(controls, BorderLayout.SOUTH);
 		
 		return panel;
 	}
@@ -261,6 +302,7 @@ public class TreeView extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				treePanel.clear();
+				root = null;
 				orientationGroup.clearSelection();
 			}			
 		});
@@ -283,14 +325,41 @@ public class TreeView extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				String value = JOptionPane.showInputDialog(TreeView.this, "Neues Element");
 					if(value != null && !value.trim().equals("")){
-						root.add(value);
-						treePanel.setTree(root);
+						if(root == null){
+							root = new Root(value);
+							treePanel.setTree(root);
+						}else{							
+							root.add(value);
+							treePanel.repaint();
+						}
 					}
 			}
 			
 		});
 		
+        fontSizeSpinner.getModel().addChangeListener(new ChangeListener() {           
+            @Override public void stateChanged(ChangeEvent e) {
+				updateFont();
+            }
+        });
+        
+        fontFamilyBox.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				updateFont();
+			}
+      	
+        });
 	}
+	
+	private void updateFont() {
+		String fontFamilyName = fonts[fontFamilyBox.getSelectedIndex()];
+		int fontSize = fontSizeModel.getNumber().intValue();
+		Font f = new Font(fontFamilyName, 0, fontSize);
+		treePanel.getStyle().setFont(f);
+	}
+
 	
 
 	public static void main(String[] args) {

@@ -2,6 +2,7 @@ package application.model;
 
 import trees.acessing.TreeWrapper;
 import trees.layout.Root;
+import trees.panel.style.StyleFactory;
 
 public class TestWrapping {
 
@@ -19,7 +20,7 @@ public class TestWrapping {
 //		System.out.println(new NodeWrapper(r.getRight()));
 		
 		TreeWrapper wrapper = new TreeWrapper();
-		Root root = wrapper.wrap(r);
+		Root root = wrapper.wrap(r, StyleFactory.getDefaultStyle());
 		System.out.println(root);
 
 	}
