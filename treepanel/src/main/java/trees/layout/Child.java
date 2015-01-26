@@ -1,10 +1,10 @@
 package trees.layout;
 
-import trees.acessing.WrappedNode;
+import trees.acessing.AbstractWrappedNode;
 
 public class Child extends Node {
 
-	public Child(WrappedNode data) {
+	public Child(AbstractWrappedNode data) {
 		super(data);
 	}
 

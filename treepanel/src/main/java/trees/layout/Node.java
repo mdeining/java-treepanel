@@ -8,14 +8,12 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import trees.acessing.AbstractNode;
+import trees.acessing.AbstractWrappedNode;
 import trees.panel.style.Style;
 
 public abstract class Node implements Iterable<Node> {
 	
-//	public static final int NODE_WIDTH = 60, NODE_HEIGHT = 40;
-	
-	private AbstractNode wrappedNode;
+	private AbstractWrappedNode wrappedNode;
 	private List<Node> children = new ArrayList<>();
 	private boolean[] hasChild = new boolean[0];
 
@@ -24,10 +22,10 @@ public abstract class Node implements Iterable<Node> {
 	
 	private Label label;
 
-	public Node(AbstractNode wrappedNode) {
+	public Node(AbstractWrappedNode wrappedNode) {
 		super();
 		this.wrappedNode = wrappedNode;
-		this.label = new Label(this);
+		this.label = null;
 	}
 
 	public int getX() {
@@ -74,12 +72,13 @@ public abstract class Node implements Iterable<Node> {
 		
 	}
 
-	public Label getAdjustedLabel(Style style) {
-		label.adjust(style);
+	public Label getLabel(Style style) {
+		if(label == null)
+			label = new Label(this, style);
 		return label;
 	}
 
-	public String getLabel() {
+	protected String getSourceLabel() {
 		if(wrappedNode == null)
 			return "";
 		else
@@ -87,7 +86,7 @@ public abstract class Node implements Iterable<Node> {
 	}
 
 	public String toString() {
-		return "Node[" + getLabel() + ", " + prelim + " + " + modifier + " ->\t" + xCoordinate + "|" + yCoordinate + "]";
+		return "Node[" + getSourceLabel() + ", " + prelim + " + " + modifier + " ->\t" + xCoordinate + "|" + yCoordinate + "]";
 	}
 	
 	@Override
@@ -96,7 +95,7 @@ public abstract class Node implements Iterable<Node> {
 	}
 	
 	protected void initialize(boolean complete){
-		label.initialize();
+		label = null;
 		xCoordinate = 0;
 		yCoordinate = 0;
 
@@ -259,6 +258,10 @@ public abstract class Node implements Iterable<Node> {
 
 	public boolean isPlaceHolder(){
 		return false;
-	}	
+	}
+	
+	public boolean isDuplicate(){
+		return wrappedNode.isDuplicate();
+	}
 
 }

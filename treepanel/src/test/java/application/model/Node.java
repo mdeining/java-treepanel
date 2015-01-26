@@ -7,7 +7,7 @@ public class Node {
 	
 	private String data;
 	
-	@Nodes
+//	@Nodes
 	private Node left, right;
 		
 	protected Node(String data) {

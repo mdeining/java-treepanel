@@ -9,20 +9,12 @@ import trees.panel.style.Style;
 
 public class Label {
 	
-private Node node = null;
-	private String source = null;
-	
 	private String[] lines;
-
 	private int width, height;
 	
-	protected Label(Node node) {
+	protected Label(Node node, Style style) {
 		super();
-		this.node = node;
-	}
-
-	protected void initialize() {
-		this.source = null;
+		initLines(node, style);
 	}
 
 	public String[] getLines() {
@@ -41,15 +33,11 @@ private Node node = null;
 		return height;
 	}
 
-	protected void adjust(Style style){
-		if(source != null)
-			return;
-
-		FontMetrics metrics = style.getFontMetrics();
-		source = node.getLabel();
+	private void initLines(Node node, Style style) {
+		FontMetrics metrics = style.getFontMetrics(node);		
+		Dimension max = this.getLabelMaximum(style, node);
 		
-		Dimension max = this.getLabelMaximum(style);
-		
+		String source = node.getSourceLabel();
 		lines = source.split("\\n");
 		int n = max.height / metrics.getHeight();
 		if (n < lines.length)
@@ -58,7 +46,7 @@ private Node node = null;
 		int etcWidth = metrics.stringWidth(Style.ETC);
 		width = 0;
 		for(int i = 0; i < lines.length; i++){
-			lines[i] = adjust(metrics, etcWidth, max.width, lines[i]);
+			lines[i] = adjustLine(metrics, etcWidth, max.width, lines[i]);
 			int currentWidth = metrics.stringWidth(lines[i]);
 			if(currentWidth > width)
 				width = currentWidth;
@@ -66,7 +54,7 @@ private Node node = null;
 		height = lines.length * metrics.getHeight();
 	}
 	
-	private String adjust(FontMetrics metrics, int etcWidth, int maxWidth, String line) {
+	private String adjustLine(FontMetrics metrics, int etcWidth, int maxWidth, String line) {
 		if(metrics.stringWidth(line) <= maxWidth) // everything fits
 			return line;
 		if (etcWidth > maxWidth) // no space at all				
@@ -82,23 +70,15 @@ private Node node = null;
 		return null; // should never be reached
 	}
 
-//	private Dimension getLabelMinimum(Style style){
-//		Size size = style.getSize(node);
-//		if(size.hasMinimum())
-//			return getLabelDimension(style, size.getMinimum());
-//		else
-//			return getLabelDimension(style, MIN_DIMENSION);
-//	}
-	
-	private Dimension getLabelMaximum(Style style){
+	private Dimension getLabelMaximum(Style style, Node node){
 		Size size = style.getSize(node);
 		if(size.hasMaximum())
-			return getLabelDimension(style, size.getMaximum());
+			return getLabelDimension(style, node, size.getMaximum());
 		else
-			return getLabelDimension(style, Style.MAX_DIMENSION);
+			return getLabelDimension(style, node, Style.MAX_DIMENSION);
 	}
 	
-	private Dimension getLabelDimension(Style style, Dimension dimension){
+	private Dimension getLabelDimension(Style style, Node node, Dimension dimension){
 		int width = dimension.width - 2 * Style.LABEL_MARGIN;
 		int height = dimension.height - 2 * Style.LABEL_MARGIN;
 		if(style.hasVerticalOrientation() && style.hasPointerBoxes(node))

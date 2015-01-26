@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class WrappedNode extends AbstractNode{
+public class WrappedNode extends AbstractWrappedNode{
 	
 	private Object node;
 	private List<?> descendants;
@@ -220,6 +220,11 @@ public class WrappedNode extends AbstractNode{
 	@Override
 	public String toString() {
 		return "NodeWrapper\n\t" + node + "\n\t" + descendants;
+	}
+
+	@Override
+	public boolean isDuplicate() {
+		return false;
 	}
 
 }

@@ -5,6 +5,7 @@ import static trees.panel.style.Orientation.*;
 import static trees.panel.style.Size.*;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
@@ -71,7 +72,9 @@ public class TreeView extends JFrame {
 		
 		Sample s = new application.model.Sample();
 		root = s.sample();
-//		root.add("123\nABCDEFGH\nxyz");
+		root.add("123\nABCDEFGH\nxyz");
+		
+		
 //		
 //		root = new Root("XXXXXXXXXX\nyyyyyy\nzz");
 //		root = new Root("B"); root.add("A"); root.add("C");		
@@ -169,9 +172,10 @@ public class TreeView extends JFrame {
 		style.setFont(new Font(initFontFamily, 0, initFontSize));
 		
 		style.setRootPointer(true);
-		style.usePlaceHolder(false);
+		style.setUsesPlaceHolder(false);
 		
-		
+		treePanel.setNodeColor(Color.BLUE, root.getLeft());
+		treePanel.setSubtreeColor(Color.RED, root.getRight());
 	}
 	
 	private JPanel createWidgetLayout() {

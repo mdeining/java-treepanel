@@ -16,6 +16,8 @@ import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.geom.RoundRectangle2D.Double;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -40,6 +42,9 @@ public class TreePanel<T> extends JPanel implements Observer{
 	private PanelOffset<T> offset;
 	private Root root;
 	private Style style;
+	
+	private Map<Object, Color> nodeColor = new HashMap<>();
+	private Map<Object, Color> subtreeColor = new HashMap<>();
 	
 	public TreePanel(T root) {
 		this();
@@ -95,7 +100,44 @@ public class TreePanel<T> extends JPanel implements Observer{
 		this.style.deleteObservers();
 		this.style = style;
 		this.style.addObserver(this);
+		this.reset();
+		this.repaint();
 	}
+	
+	public void setNodeColor(Color color, Object ... nodes){
+		for(Object node : nodes)
+			nodeColor.put(node, color);
+		this.repaint();
+	}
+	
+	public void removeNodeColor(Object ... nodes){
+		for(Object node : nodes)
+			nodeColor.remove(node);
+		this.repaint();
+	}
+	
+	public void clearNodeColor(){
+		nodeColor.clear();
+		this.repaint();
+	}
+	
+	public void setSubtreeColor(Color color, Object ... nodes){
+		for(Object node : nodes)
+			subtreeColor.put(node, color);
+		this.repaint();
+	}
+	
+	public void removeSubtreeColor(Object ... nodes){
+		for(Object node : nodes)
+			subtreeColor.remove(node);
+		this.repaint();
+	}
+	
+	public void clearSubtreeColor(){
+		subtreeColor.clear();
+		this.repaint();
+	}
+	
 	
 	@Override
 	public void update(Observable o, Object arg) {
@@ -157,8 +199,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 		Font font = this.getFont();
 		Color color = this.getForeground();
 
-		drawEdges(g, root, 0);
-		drawNodes(g, root, 0);
+		drawTree(g, root, 0);
 		
 		this.setForeground(color);
 		this.setFont(font);
@@ -273,34 +314,71 @@ public class TreePanel<T> extends JPanel implements Observer{
 		g.drawLine(p2.x, p2.y, p0.x, p0.y);
 	}
 	
-	private void drawNodes(Graphics g, Node node, int level) {
+	private void drawTree(Graphics g, Node node, int level) {
 		if(node == null || node.isPlaceHolder())
 			return;
 
 		if(level > style.getMaxDepth())
 			return;
 		
-		drawNode(g, node);
-		for(Node child : node)
-			drawNodes(g, child, level + 1);
+		Color currentColor = g.getColor(); // Save current color
+		Color nColor = nodeColor.get(node.getNode());
+		Color sColor = subtreeColor.get(node.getNode());
+		
+		if(sColor != null)
+			g.setColor(sColor);
+		drawNode(g, node, nColor);
+		
+		int slots = node.getChildrenSlots(), pos = 0;
+		for(Node child : node){
+			drawEdge(g, node, child, pos++, slots);
+			drawTree(g, child, level + 1);
+		}
+		if(sColor != null)
+			g.setColor(currentColor);
 	}
+
+	//// Nodes /////////////////////////////
 	
-	private void drawNode(Graphics g, Node node) {
+	private void drawNode(Graphics g, Node node, Color color) {
+		Color currentColor = g.getColor();
+		if(color != null)
+			g.setColor(color);
+		
 		Rectangle r = node.getNodeArea(style, offset);
 		Rectangle l = node.getLabelArea(style, offset);
 		
 		Shape shape = style.getShape(node);
 		switch(shape){
-			case RECTANGLE:			g.drawRect(r.x, r.y, r.width, r.height); break;
-			case ROUNDED_RECTANGLE:	g.drawRoundRect(r.x, r.y, r.width, r.height, Style.ARC_SIZE, Style.ARC_SIZE); break;
+			case RECTANGLE:
+				if(node.isDuplicate()){
+					Color currentColor2 = g.getColor();
+					g.setColor(Color.LIGHT_GRAY);
+					g.fillRect(r.x, r.y, r.width, r.height);
+					g.setColor(currentColor2);
+				}
+				g.drawRect(r.x, r.y, r.width, r.height);
+				break;
+			case ROUNDED_RECTANGLE:
+				if(node.isDuplicate()){
+					Color currentColor2 = g.getColor();
+					g.setColor(Color.LIGHT_GRAY);
+					g.fillRoundRect(r.x, r.y, r.width, r.height, Style.ARC_SIZE, Style.ARC_SIZE);
+					g.setColor(currentColor2);
+				}
+				g.drawRoundRect(r.x, r.y, r.width, r.height, Style.ARC_SIZE, Style.ARC_SIZE); 
+				break;
 		}		
 		drawPointerBoxes(g, node, shape, r.x, r.y, r.width, r.height);		
-		drawLabel(g, node, l.x, l.y, l.width, l.height);		
+		drawLabel(g, node, l.x, l.y, l.width, l.height);
+		
+		if(color != null)
+			g.setColor(currentColor);
 	}
 
 	private void drawPointerBoxes(Graphics g, Node node, Shape shape, int x, int y,
 			int w, int h) {
-		if(style.hasPointerBoxes()){
+		if(!node.isDuplicate() && style.hasPointerBoxes()){
 			int boxes = node.getChildrenSlots();
 			int y1 = 0, y2 = 0, x1 = 0, x2 = 0, yp = 0, xp = 0, b = Style.POINTER_BOX_HEIGHT;
 			switch(style.getOrientation()){
@@ -311,11 +389,17 @@ public class TreePanel<T> extends JPanel implements Observer{
 			}
 			for(int i = 0; i < boxes; i++)
 				if(style.hasVerticalOrientation()){
-					x2 = x1 + xp;
+					if(i < boxes - 1)
+						x2 = x1 + xp;
+					else
+						x2 = x + w;
 					drawHorizontalPointerBox(g, y1, y2, x1, x2, node.hasChild(i), i, boxes);
 					x1 = x2;
 				}else{ // style.hasHorozontalOrientation()
-					y2 = y1 + yp;
+					if(i < boxes - 1)
+						y2 = y1 + yp;
+					else
+						y2 = y + h;
 					drawVerticalPointerBox(g, x1, x2, y1, y2, node.hasChild(i), i, boxes);
 					y1 = y2;
 				}
@@ -347,6 +431,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 		if(node.hasChild(0) && node.hasChild(node.getChildrenSlots() - 1))
 			return;
 		
+		Color currentColor = g.getColor();
 		Graphics2D g2 = (Graphics2D) g;
 		
 		Double rectangle = new RoundRectangle2D.Double();
@@ -358,17 +443,15 @@ public class TreePanel<T> extends JPanel implements Observer{
 		g2.setColor(Color.WHITE);
 		g2.fill(mask);
 		g2.setColor(Color.BLACK);
+		
+		g.setColor(currentColor);
 	}
 
 	private void drawLabel(Graphics g, Node node, int x, int y, int w, int h) {
-		g.setColor(Color.YELLOW);
-		g.fillRect(x, y, w, h);
-		g.setColor(Color.BLACK);
-		
 		g.setFont(style.getFont(node));
 		
 		FontMetrics metrics = g.getFontMetrics();
-		Label label = node.getAdjustedLabel(style);
+		Label label = node.getLabel(style);
 		
 		x = x + (w - label.getWidth()) / 2;
 		y = y + (h - label.getHeight()) / 2;
@@ -382,24 +465,10 @@ public class TreePanel<T> extends JPanel implements Observer{
 		
 	////////////// Edges ///////////////
 
-		private void drawEdges(Graphics g, Node node, int level) {
-			if(node == null || node.isPlaceHolder())
-				return;
-					
-			if(level >= style.getMaxDepth())
-				return;
-	
-			int slots = node.getChildrenSlots(), position = 0;
-			for(Node child : node)
-				if(child != null && !child.isPlaceHolder())
-					drawEdge(g, node, child, position, slots);
-			
-			for(Node child : node)
-				drawEdges(g, child, level + 1);
-		}
 
-			
-		private void drawEdge(Graphics g, Node from, Node to, int position, int slots){
+		private void drawEdge(Graphics g, Node from, Node to, int pos, int slots){			
+			if(to == null || to.isPlaceHolder())
+				return;
 	
 			int x = from.getX();
 			int y = from.getY();
@@ -415,28 +484,44 @@ public class TreePanel<T> extends JPanel implements Observer{
 			
 			switch(style.getOrientation()){
 				case NORTH:
-					xs = x + w / 2;
+					xs = x + (w + 2*pos*w)/(2*slots);
 					ys = y + h;
+					if(style.hasPointerBoxes(from))
+						ys = ys - Style.POINTER_BOX_HEIGHT / 2;
 					xe = xc + wc / 2;
+					if((x + w/2) == xe && xs >= xc && xs <= xc + wc) // would have been orthogonal if centered
+						xe = xs;
 					ye = yc;
 					break;
 				case SOUTH:
-					xs = x + w / 2;
+					xs = x + (w + 2*pos*w)/(2*slots);
 					ys = y;
-					xe = xc + wc / 2;
+					if(style.hasPointerBoxes(from))
+						ys = ys + Style.POINTER_BOX_HEIGHT / 2;
+					xe = xc + wc/2;
+					if((x + w/2) == xe && xs >= xc && xs <= xc + wc) // would have been orthogonal if centered
+						xe = xs;
 					ye = yc + hc;
 					break;
 				case EAST:
 					xs = x + w;
-					ys = y + h/2;
+					if(style.hasPointerBoxes(from))
+						xs = xs - Style.POINTER_BOX_HEIGHT / 2;
+					ys = y + (h + 2*pos*h)/(2*slots);
 					xe = xc;
 					ye = yc + hc/2;
+					if((y + h/2) == ye && ys >= yc && ys <= yc + hc) // would have been orthogonal if centered
+						ye = ys;
 					break;
 				case WEST:
 					xs = x;
-					ys = y + h/2;
+					if(style.hasPointerBoxes(from))
+						xs = xs + Style.POINTER_BOX_HEIGHT / 2;
+					ys = y + (h + 2*pos*h)/(2*slots);
 					xe = xc + wc;
 					ye = yc + hc/2;
+					if((y + h/2) == ye && ys >= yc && ys <= yc + hc) // would have been orthogonal if centered
+						ye = ys;
 					break;
 			}
 			

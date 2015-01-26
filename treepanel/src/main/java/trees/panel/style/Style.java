@@ -141,11 +141,11 @@ public class Style extends Observable{
 		this.notify(REALIGN);
 	}
 	
-	public void usePlaceHolder(boolean placeHolder){
-		this.usePlaceHolder(null, placeHolder);
+	public void setUsesPlaceHolder(boolean placeHolder){
+		this.setUsesPlaceHolder(null, placeHolder);
 	}
 
-	public void usePlaceHolder(Class<?> cls, boolean placeHolder){
+	public void setUsesPlaceHolder(Class<?> cls, boolean placeHolder){
 		if(cls == null)
 			this.placeHolder.setValue(placeHolder);
 		else
@@ -223,14 +223,14 @@ public class Style extends Observable{
 	
 	public int getWidth(Node node){
 		Size size = this.getSize(node.getNodeClass());
-		Label label = node.getAdjustedLabel(this);
+		Label label = node.getLabel(this);
 		int width = size.getWidth(this.hasVerticalOrientation(), this.hasPointerBoxes(node), label.getDimension());
 		return width;		
 	}
 
 	public int getHeight(Node node){
 		Size size = this.getSize(node.getNodeClass());	
-		Label label = node.getAdjustedLabel(this);
+		Label label = node.getLabel(this);
 		int height = size.getHeight(this.hasVerticalOrientation(), this.hasPointerBoxes(node), label.getDimension());
 		return height;		
 	}

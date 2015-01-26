@@ -81,6 +81,7 @@ public class TestLayoutAlgorithm {
 		style.setSiblingSeparation(40);
 		style.setSubtreeSeparation(40);
 		style.setMaxDepth(10);
+		style.setPointerBoxes(false);
 	}
 	
 	@Test

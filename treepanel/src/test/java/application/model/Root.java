@@ -12,7 +12,7 @@ public class Root extends Node {
 		
 		list = new ArrayList<>();
 		list.add(null);
-//		list.add(this);
+		list.add(this);
 		list.add(new Node("x"));
 //		list.add("xxx");
 		list.add(null);

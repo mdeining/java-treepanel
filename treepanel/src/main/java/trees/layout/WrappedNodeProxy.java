@@ -1,12 +1,12 @@
 package trees.layout;
 
-import trees.acessing.AbstractNode;
+import trees.acessing.AbstractWrappedNode;
 
-public class NodeProxy extends AbstractNode{
+public class WrappedNodeProxy extends AbstractWrappedNode{
 	
 	private Class<?> cls;
 
-	public NodeProxy(Class<?> cls) {
+	public WrappedNodeProxy(Class<?> cls) {
 		super();
 		this.cls = cls;
 	}
@@ -29,6 +29,11 @@ public class NodeProxy extends AbstractNode{
 	@Override
 	public String toString() {
 		return "Proxy [cls=" + cls + "]";
+	}
+	
+	@Override
+	public boolean isDuplicate() {
+		return false;
 	}
 
 }

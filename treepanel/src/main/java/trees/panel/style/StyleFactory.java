@@ -38,7 +38,7 @@ public class StyleFactory {
 		style.setPointerBoxes(POINTER_BOXES);
 		style.setShape(SHAPE);
 		style.setSize(SIZE);
-		style.usePlaceHolder(true);
+		style.setUsesPlaceHolder(true);
 		return style;
 	}
 
