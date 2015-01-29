@@ -86,7 +86,7 @@ public abstract class Node implements Iterable<Node> {
 	}
 
 	public String toString() {
-		return "Node[" + getSourceLabel() + ", " + prelim + " + " + modifier + " ->\t" + xCoordinate + "|" + yCoordinate + "]";
+		return "Node[" + getSourceLabel().split("\\n")[0] + ", " + prelim + " + " + modifier + " ->\t" + xCoordinate + "|" + yCoordinate + "]";
 	}
 	
 	@Override

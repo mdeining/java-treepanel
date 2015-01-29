@@ -6,9 +6,7 @@ import trees.layout.Child;
 import trees.layout.LayoutAlgorithm;
 import trees.layout.Node;
 import trees.layout.Root;
-import trees.panel.style.Orientation;
 import trees.panel.style.Style;
-import trees.panel.style.StyleFactory;
 import static trees.panel.style.Size.*;
 
 import org.junit.Before;
@@ -73,15 +71,7 @@ public class TestLayoutAlgorithm {
 		root = o;
 		
 		algorithm = new LayoutAlgorithm();
-		style = StyleFactory.getPlainStyle();
-		
-		style.setOrientation(Orientation.NORTH);
-		style.setSize(FIXED(20, 20));
-		style.setLevelSepartion(40);
-		style.setSiblingSeparation(40);
-		style.setSubtreeSeparation(40);
-		style.setMaxDepth(10);
-		style.setPointerBoxes(false);
+		style = new Style(40, 40, 40, FIXED(20, 20));
 	}
 	
 	@Test

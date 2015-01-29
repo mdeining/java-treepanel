@@ -1,4 +1,4 @@
-package application.view;
+package application1.view;
 
 import static trees.panel.style.Alignment.*;
 import static trees.panel.style.Orientation.*;
@@ -26,9 +26,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import playground.WrapLayout;
-import application.model.Root;
-import application.model.Sample;
+import application1.model.Root;
+import application1.model.Sample;
 import trees.panel.style.Alignment;
 import trees.panel.style.Orientation;
 import trees.panel.style.Shape;
@@ -70,7 +69,7 @@ public class TreeView extends JFrame {
 		
 		// The Model
 		
-		Sample s = new application.model.Sample();
+		Sample s = new application1.model.Sample();
 		root = s.sample();
 		root.add("123\nABCDEFGH\nxyz");
 		
@@ -81,7 +80,7 @@ public class TreeView extends JFrame {
 //		root = new Root("M"); root.add("P");
 //		root = new Root("M");
 				
-		treePanel = new TreePanel<Root>(root);
+//		treePanel = new TreePanel<Root>(root);
 		
 //		treePanel = new TreePanel<Root>();
 
@@ -128,7 +127,7 @@ public class TreeView extends JFrame {
 		orientationGroup.add(westRb);
 		northRb.setSelected(true);
 		
-		Style style = treePanel.getStyle();
+		Style style = new Style();
 		verticalGroup = new ButtonGroup();
 		leftRb.setSelected(true);
 		style.setVerticalAlignment(TOP);
@@ -161,18 +160,22 @@ public class TreeView extends JFrame {
 		style.setShape(Shape.ROUNDED_RECTANGLE);
 		style.setPointerBoxes(true);
 		style.setLevelSepartion(60);
+		style.setSiblingSeparation(40);
+		style.setSubtreeSeparation(40);
 		
 //		style.setSize(FIXED(50, 30));
 //		style.setSize(FIXED(60, 50));
 //		style.setSize(VARIABLE());
 //		style.setSize(MAX_VARIABLE(60, 50));
-//		style.setSize(MIN_VARIABLE(40, 30));
-		style.setSize(RESTRICTED_VARIABLE(40, 30, 60, 50));
+		style.setSize(MIN_VARIABLE(40, 30));
+//		style.setSize(RESTRICTED_VARIABLE(40, 30, 60, 50));
 		
 		style.setFont(new Font(initFontFamily, 0, initFontSize));
 		
 		style.setRootPointer(true);
-		style.setUsesPlaceHolder(false);
+		style.setPlaceHolder(false);
+		
+		treePanel = new TreePanel<>(style, root);
 		
 		treePanel.setNodeColor(Color.BLUE, root.getLeft());
 		treePanel.setSubtreeColor(Color.RED, root.getRight());

@@ -1,4 +1,4 @@
-package playground;
+package application1.view;
 
 import java.awt.*;
 

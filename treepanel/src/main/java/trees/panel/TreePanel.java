@@ -31,7 +31,6 @@ import trees.layout.Root;
 import trees.panel.style.Action;
 import trees.panel.style.Shape;
 import trees.panel.style.Style;
-import trees.panel.style.StyleFactory;
 
 @SuppressWarnings("serial")
 public class TreePanel<T> extends JPanel implements Observer{
@@ -46,19 +45,30 @@ public class TreePanel<T> extends JPanel implements Observer{
 	private Map<Object, Color> nodeColor = new HashMap<>();
 	private Map<Object, Color> subtreeColor = new HashMap<>();
 	
-	public TreePanel(T root) {
-		this();
-		this.setTree(root);
-	}
-
-	public TreePanel() {
+	public TreePanel(Style style, T root) {
 		super();
-		this.style = StyleFactory.getDefaultStyle();
+		if(style == null)
+			this.style = new Style();
+		else
+			this.style = style;
 		this.style.addObserver(this);
 		this.offset = new PanelOffset<T>(this);
 		this.root = null;
 		this.setBackground(Color.WHITE);
 		this.addUpdateListener();
+		this.setTree(root);
+	}
+
+	public TreePanel(T root) {
+		this(null, root);
+	}
+
+	public TreePanel(Style style) {
+		this(style, null);
+	}
+
+	public TreePanel() {
+		this(null, null);
 	}
 	
 	private void addUpdateListener() {
@@ -378,8 +388,10 @@ public class TreePanel<T> extends JPanel implements Observer{
 
 	private void drawPointerBoxes(Graphics g, Node node, Shape shape, int x, int y,
 			int w, int h) {
-		if(!node.isDuplicate() && style.hasPointerBoxes()){
+		if(style.hasPointerBoxes()){
 			int boxes = node.getChildrenSlots();
+			if(boxes == 0)
+				return;
 			int y1 = 0, y2 = 0, x1 = 0, x2 = 0, yp = 0, xp = 0, b = Style.POINTER_BOX_HEIGHT;
 			switch(style.getOrientation()){
 				case NORTH: y1 = y + h - b; y2 = y1 + b; x1 = x; xp = w / boxes; break;

@@ -1,4 +1,4 @@
-package application.model;
+package application1.model;
 
 public class Sample {
 	

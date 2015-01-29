@@ -22,7 +22,7 @@ public class TreeWrapper {
 		Root root = new Root(wrappedRoot);
 		
 		wrap(root, wrappedRoot, style);
-		
+		wrappedObjects.clear(); // clear up for next run
 		return root;
 	}
 

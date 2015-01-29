@@ -89,6 +89,7 @@ public class LayoutAlgorithm {
 				// the separation between sibling nodes, and
 				// the mean size of left sibling and current node.
 				node.prelim = node.getLeftSibling().prelim + style.getSiblingSeparation() + 
+//					node.getLeftSibling().getWidth(style); // ?????
 					meanNodeSize(node.getLeftSibling(), node);
 			else // No sibling on the left to worry about.
 				node.prelim = 0;
@@ -104,7 +105,7 @@ public class LayoutAlgorithm {
 			}
 			int midpoint = (leftmost.prelim + rightmost.prelim) / 2;
 			if (node.hasLeftSibling()){
-				node.prelim = node.getLeftSibling().prelim + style.getSiblingSeparation() +
+				node.prelim = node.getLeftSibling().prelim + style.getSiblingSeparation() + 
 						meanNodeSize(node.getLeftSibling(), node); 
 				node.modifier = node.prelim - midpoint; 
 				apportion(node, level);
@@ -200,21 +201,38 @@ public class LayoutAlgorithm {
 
 	private int meanNodeSize(Node leftNode, Node rightNode) {
 		int nodeSize = 0;
-		
+
+		//Calculate only for leftNode
 		switch(style.getOrientation()){
 			case NORTH: case SOUTH:
-				if(leftNode != null)
-					nodeSize = nodeSize + leftNode.getRightSize(style);
-				if(rightNode != null)
-					nodeSize = nodeSize + rightNode.getLeftSize(style);
+				nodeSize = leftNode.getWidth(style);
+//				if(leftNode != null)
+//					nodeSize = nodeSize + leftNode.getRightSize(style);
+//				if(rightNode != null)
+//					nodeSize = nodeSize + rightNode.getLeftSize(style);
 				break;
 			case EAST: case WEST:
-				if(leftNode != null)
-					nodeSize = nodeSize + leftNode.getTopSize(style);
-				if(rightNode != null)
-					nodeSize = nodeSize + rightNode.getBottomSize(style);
+				nodeSize = leftNode.getHeight(style);
+//				if(leftNode != null)
+//					nodeSize = nodeSize + leftNode.getTopSize(style);
+//				if(rightNode != null)
+//					nodeSize = nodeSize + rightNode.getBottomSize(style);
 				break;
 		}
+//		switch(style.getOrientation()){
+//			case NORTH: case SOUTH:
+//				if(leftNode != null)
+//					nodeSize = nodeSize + leftNode.getRightSize(style);
+//				if(rightNode != null)
+//					nodeSize = nodeSize + rightNode.getLeftSize(style);
+//				break;
+//			case EAST: case WEST:
+//				if(leftNode != null)
+//					nodeSize = nodeSize + leftNode.getTopSize(style);
+//				if(rightNode != null)
+//					nodeSize = nodeSize + rightNode.getBottomSize(style);
+//				break;
+//		}
 		return nodeSize;
 	}
 

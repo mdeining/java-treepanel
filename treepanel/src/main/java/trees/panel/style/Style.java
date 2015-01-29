@@ -14,6 +14,14 @@ import static trees.panel.style.Action.*;
 
 public class Style extends Observable{
 	
+	private static final int DEFAULT_DEPTH = Integer.MAX_VALUE;
+	private static final Orientation DEFAULT_ORIENTATION = Orientation.NORTH;	
+	private static final Alignment DEFAULT_HORIZONTAL_ALIGNMENT = Alignment.LEFT;
+	private static final Alignment DEFAULT_VERTICAL_ALIGNMENT = Alignment.TOP;	
+	private static final Shape DEFAULT_SHAPE = Shape.RECTANGLE; 
+	private static final Size DEFAULT_SIZE = Size.VARIABLE(); 
+
+	
 	public static final int TREE_MARGIN = 8;	
 
 	public static String ROOT = "root";
@@ -32,8 +40,7 @@ public class Style extends Observable{
 	private static final JPanel panel = new JPanel();
 	
 	// General settings
-	private int maxDepth, siblingSeparation, 
-			subtreeSeparation, levelSepartion;
+	private int maxDepth, siblingSeparation, subtreeSeparation, levelSepartion;
 	private Orientation orientation;
 	private Alignment horizontalAlignment, verticalAlignment;
 	
@@ -42,14 +49,41 @@ public class Style extends Observable{
 	// Possible class specific settings
 	private Value<Font> font = new Value<>();
 	private Value<FontMetrics> metrics = new Value<>();
-	private Value<Boolean> pointerBoxes = new Value<>();
 	private Value<Shape> shape = new Value<>();	
 	private Value<Size> size = new Value<>();
+	private Value<Boolean> pointerBoxes = new Value<>();
 	private Value<Boolean> placeHolder = new Value<>();
 	
-	protected Style(){
+	public Style(){
 		super();
+		this.maxDepth = DEFAULT_DEPTH;
+		this.siblingSeparation = 0;
+		this.subtreeSeparation = 0;
+		this.levelSepartion = 0;
+		this.orientation = DEFAULT_ORIENTATION;
+		this.horizontalAlignment = DEFAULT_HORIZONTAL_ALIGNMENT;
+		this.verticalAlignment = DEFAULT_VERTICAL_ALIGNMENT;
+		
 		this.setFont(panel.getFont());
+		this.setShape(DEFAULT_SHAPE);
+		this.setSize(DEFAULT_SIZE);
+		this.setPointerBoxes(false);
+		this.setPlaceHolder(false);
+	}
+
+	public Style(int siblingSeparation, int subtreeSeparation, int levelSepartion) {
+		this();
+		this.siblingSeparation = siblingSeparation;
+		this.subtreeSeparation = subtreeSeparation;
+		this.levelSepartion = levelSepartion;
+	}
+
+	public Style(int siblingSeparation, int subtreeSeparation, int levelSepartion, Size size) {
+		this();
+		this.siblingSeparation = siblingSeparation;
+		this.subtreeSeparation = subtreeSeparation;
+		this.levelSepartion = levelSepartion;
+		this.setSize(size);
 	}
 
 	private void notify(Action action){
@@ -141,7 +175,7 @@ public class Style extends Observable{
 		this.notify(REALIGN);
 	}
 	
-	public void setUsesPlaceHolder(boolean placeHolder){
+	public void setPlaceHolder(boolean placeHolder){
 		this.setUsesPlaceHolder(null, placeHolder);
 	}
 
