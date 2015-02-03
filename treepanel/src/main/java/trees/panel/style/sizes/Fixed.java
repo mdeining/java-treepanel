@@ -38,16 +38,4 @@ public class Fixed extends Size {
 	public boolean isFixed() {
 		return true;
 	}
-
-	@Override
-	protected int getWidth(boolean hasVerticalOrientation, boolean hasPointerBoxes, Dimension label) {
-		// Ignore Label
-		return width;
-	}
-
-	@Override
-	protected int getHeight(boolean hasVerticalOrientation, boolean hasPointerBoxes, Dimension label) {
-		// Ignore Label
-		return height;
-	}
 }

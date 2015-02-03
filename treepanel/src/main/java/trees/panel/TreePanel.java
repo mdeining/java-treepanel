@@ -23,29 +23,28 @@ import java.util.Observer;
 
 import javax.swing.JPanel;
 
-import trees.acessing.TreeWrapper;
-import trees.layout.Label;
+import trees.building.TreeBuilder;
+import trees.layout.Action;
 import trees.layout.LayoutAlgorithm;
 import trees.layout.Node;
-import trees.layout.Root;
-import trees.panel.style.Action;
 import trees.panel.style.Shape;
 import trees.panel.style.Style;
 
 @SuppressWarnings("serial")
 public class TreePanel<T> extends JPanel implements Observer{
 	
-	private TreeWrapper wrapper = new TreeWrapper();
+	private TreeBuilder builder = new TreeBuilder();
 	private LayoutAlgorithm layoutAlgorithm = new LayoutAlgorithm();
 	
 	private PanelOffset<T> offset;
-	private Root root;
+	private T tree;
+	private Node root;
 	private Style style;
 	
-	private Map<Object, Color> nodeColor = new HashMap<>();
-	private Map<Object, Color> subtreeColor = new HashMap<>();
+	private Map<Object, Color> nodeColors = new HashMap<>();
+	private Map<Object, Color> subtreeColors = new HashMap<>();
 	
-	public TreePanel(Style style, T root) {
+	public TreePanel(Style style, T tree) {
 		super();
 		if(style == null)
 			this.style = new Style();
@@ -56,11 +55,11 @@ public class TreePanel<T> extends JPanel implements Observer{
 		this.root = null;
 		this.setBackground(Color.WHITE);
 		this.addUpdateListener();
-		this.setTree(root);
+		this.setTree(tree);
 	}
 
-	public TreePanel(T root) {
-		this(null, root);
+	public TreePanel(T tree) {
+		this(null, tree);
 	}
 
 	public TreePanel(Style style) {
@@ -82,18 +81,16 @@ public class TreePanel<T> extends JPanel implements Observer{
 		});
 	}
 
-	public void setTree(T root){
-		this.root = wrapper.wrap(root, this.style);
+	public void setTree(T tree){
+		this.tree = tree;
+		this.root = builder.build(tree, this.style);
 		layoutAlgorithm.positionTree(this.style, this.root);
 		offset.set();
 		this.repaint();
 	}
 	
-	@SuppressWarnings("unchecked")
 	public T getTree(){
-		if(root == null)
-			return null;
-		return (T)root.getNode();		
+		return tree;		
 	}
 	
 	public void clear() {
@@ -110,41 +107,41 @@ public class TreePanel<T> extends JPanel implements Observer{
 		this.style.deleteObservers();
 		this.style = style;
 		this.style.addObserver(this);
-		this.reset();
+		this.rebuild();
 		this.repaint();
 	}
 	
 	public void setNodeColor(Color color, Object ... nodes){
 		for(Object node : nodes)
-			nodeColor.put(node, color);
+			nodeColors.put(node, color);
 		this.repaint();
 	}
 	
 	public void removeNodeColor(Object ... nodes){
 		for(Object node : nodes)
-			nodeColor.remove(node);
+			nodeColors.remove(node);
 		this.repaint();
 	}
 	
 	public void clearNodeColor(){
-		nodeColor.clear();
+		nodeColors.clear();
 		this.repaint();
 	}
 	
 	public void setSubtreeColor(Color color, Object ... nodes){
 		for(Object node : nodes)
-			subtreeColor.put(node, color);
+			subtreeColors.put(node, color);
 		this.repaint();
 	}
 	
 	public void removeSubtreeColor(Object ... nodes){
 		for(Object node : nodes)
-			subtreeColor.remove(node);
+			subtreeColors.remove(node);
 		this.repaint();
 	}
 	
 	public void clearSubtreeColor(){
-		subtreeColor.clear();
+		subtreeColors.clear();
 		this.repaint();
 	}
 	
@@ -156,8 +153,8 @@ public class TreePanel<T> extends JPanel implements Observer{
 				case REPAINT:  		break;
 				case REALIGN:		realign(); break;
 				case RECALCULATE:	recalculate(); break;
+				case REPOSITION:	reposition(); break;
 				case REBUILD:		rebuild(); break;
-				case RESET:			reset(); break;
 			}
 			this.externalRepaint = false;
 		}
@@ -173,19 +170,18 @@ public class TreePanel<T> extends JPanel implements Observer{
 		offset.set();
 	}
 
-	private void rebuild() {
+	private void reposition() {
 		layoutAlgorithm.positionTree(style, root); 
 		offset.set();
 	}
 	
-	private void reset(){
-		T root = this.getTree();
-		this.root = wrapper.wrap(root, this.style);
+	private void rebuild(){
+		this.root = builder.build(this.tree, this.style);
 		this.layoutAlgorithm.positionTree(this.style, this.root);
 		offset.set();
 	}
 
-	protected Root getRoot(){
+	protected Node getRoot(){
 		return root;
 	}
 	
@@ -202,7 +198,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 			return;
 		
 		if(externalRepaint)
-			reset();
+			rebuild();
 		
 		externalRepaint = true;
 		
@@ -217,7 +213,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 	
 	////////////// Nodes ///////////////
 
-	private void drawRootPointer(Graphics g, Root root) {
+	private void drawRootPointer(Graphics g, Node root) {
 		if(!style.hasRootPointer())
 			return;
 		
@@ -226,7 +222,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 
 		Rectangle r;
 		if(root != null)
-			r = root.getNodeArea(style, offset);
+			r = root.getNodeArea(offset);
 		else
 			r = new Rectangle(offset.width, offset.height, fm.stringWidth(Style.ROOT), fm.getHeight());
 		
@@ -332,8 +328,8 @@ public class TreePanel<T> extends JPanel implements Observer{
 			return;
 		
 		Color currentColor = g.getColor(); // Save current color
-		Color nColor = nodeColor.get(node.getNode());
-		Color sColor = subtreeColor.get(node.getNode());
+		Color nColor = node.selectColor(nodeColors);
+		Color sColor = node.selectColor(subtreeColors);
 		
 		if(sColor != null)
 			g.setColor(sColor);
@@ -355,8 +351,8 @@ public class TreePanel<T> extends JPanel implements Observer{
 		if(color != null)
 			g.setColor(color);
 		
-		Rectangle r = node.getNodeArea(style, offset);
-		Rectangle l = node.getLabelArea(style, offset);
+		Rectangle r = node.getNodeArea(offset);
+		Rectangle l = node.getLabelArea(offset);
 		
 		Shape shape = style.getShape(node);
 		switch(shape){
@@ -463,13 +459,13 @@ public class TreePanel<T> extends JPanel implements Observer{
 		g.setFont(style.getFont(node));
 		
 		FontMetrics metrics = g.getFontMetrics();
-		Label label = node.getLabel(style);
+		Dimension label = node.getLabelSize();
 		
-		x = x + (w - label.getWidth()) / 2;
-		y = y + (h - label.getHeight()) / 2;
+		x = x + (w - label.width) / 2;
+		y = y + (h - label.height) / 2;
 		
 		y = y + metrics.getAscent(); 
-		for(String line : label.getLines()){
+		for(String line : node.getLabelLines()){
 			g.drawString(line, x, y);
 			y = y + metrics.getHeight();
 		}
@@ -477,69 +473,68 @@ public class TreePanel<T> extends JPanel implements Observer{
 		
 	////////////// Edges ///////////////
 
+	private void drawEdge(Graphics g, Node from, Node to, int pos, int slots){			
+		if(to == null || to.isPlaceHolder())
+			return;
 
-		private void drawEdge(Graphics g, Node from, Node to, int pos, int slots){			
-			if(to == null || to.isPlaceHolder())
-				return;
-	
-			int x = from.getX();
-			int y = from.getY();
-			int w = from.getWidth(style);
-			int h = from.getHeight(style);
-			
-			int xc = to.getX();
-			int yc = to.getY();
-			int wc = to.getWidth(style);
-			int hc = to.getHeight(style);
-			
-			int xs = 0, ys = 0, xe = 0, ye = 0;
-			
-			switch(style.getOrientation()){
-				case NORTH:
-					xs = x + (w + 2*pos*w)/(2*slots);
-					ys = y + h;
-					if(style.hasPointerBoxes(from))
-						ys = ys - Style.POINTER_BOX_HEIGHT / 2;
-					xe = xc + wc / 2;
-					if((x + w/2) == xe && xs >= xc && xs <= xc + wc) // would have been orthogonal if centered
-						xe = xs;
-					ye = yc;
-					break;
-				case SOUTH:
-					xs = x + (w + 2*pos*w)/(2*slots);
-					ys = y;
-					if(style.hasPointerBoxes(from))
-						ys = ys + Style.POINTER_BOX_HEIGHT / 2;
-					xe = xc + wc/2;
-					if((x + w/2) == xe && xs >= xc && xs <= xc + wc) // would have been orthogonal if centered
-						xe = xs;
-					ye = yc + hc;
-					break;
-				case EAST:
-					xs = x + w;
-					if(style.hasPointerBoxes(from))
-						xs = xs - Style.POINTER_BOX_HEIGHT / 2;
-					ys = y + (h + 2*pos*h)/(2*slots);
-					xe = xc;
-					ye = yc + hc/2;
-					if((y + h/2) == ye && ys >= yc && ys <= yc + hc) // would have been orthogonal if centered
-						ye = ys;
-					break;
-				case WEST:
-					xs = x;
-					if(style.hasPointerBoxes(from))
-						xs = xs + Style.POINTER_BOX_HEIGHT / 2;
-					ys = y + (h + 2*pos*h)/(2*slots);
-					xe = xc + wc;
-					ye = yc + hc/2;
-					if((y + h/2) == ye && ys >= yc && ys <= yc + hc) // would have been orthogonal if centered
-						ye = ys;
-					break;
-			}
-			
-			int xOff = offset.width;
-			int yOff = offset.height;
-			g.drawLine(xs + xOff, ys + yOff, xe + xOff, ye + yOff);
+		int x = from.getX();
+		int y = from.getY();
+		int w = from.getWidth();
+		int h = from.getHeight();
+		
+		int xc = to.getX();
+		int yc = to.getY();
+		int wc = to.getWidth();
+		int hc = to.getHeight();
+		
+		int xs = 0, ys = 0, xe = 0, ye = 0;
+		
+		switch(style.getOrientation()){
+			case NORTH:
+				xs = x + (w + 2*pos*w)/(2*slots);
+				ys = y + h;
+				if(style.hasPointerBoxes(from))
+					ys = ys - Style.POINTER_BOX_HEIGHT / 2;
+				xe = xc + wc / 2;
+				if((x + w/2) == xe && xs >= xc && xs <= xc + wc) // would have been orthogonal if centered
+					xe = xs;
+				ye = yc;
+				break;
+			case SOUTH:
+				xs = x + (w + 2*pos*w)/(2*slots);
+				ys = y;
+				if(style.hasPointerBoxes(from))
+					ys = ys + Style.POINTER_BOX_HEIGHT / 2;
+				xe = xc + wc/2;
+				if((x + w/2) == xe && xs >= xc && xs <= xc + wc) // would have been orthogonal if centered
+					xe = xs;
+				ye = yc + hc;
+				break;
+			case EAST:
+				xs = x + w;
+				if(style.hasPointerBoxes(from))
+					xs = xs - Style.POINTER_BOX_HEIGHT / 2;
+				ys = y + (h + 2*pos*h)/(2*slots);
+				xe = xc;
+				ye = yc + hc/2;
+				if((y + h/2) == ye && ys >= yc && ys <= yc + hc) // would have been orthogonal if centered
+					ye = ys;
+				break;
+			case WEST:
+				xs = x;
+				if(style.hasPointerBoxes(from))
+					xs = xs + Style.POINTER_BOX_HEIGHT / 2;
+				ys = y + (h + 2*pos*h)/(2*slots);
+				xe = xc + wc;
+				ye = yc + hc/2;
+				if((y + h/2) == ye && ys >= yc && ys <= yc + hc) // would have been orthogonal if centered
+					ye = ys;
+				break;
 		}
+		
+		int xOff = offset.width;
+		int yOff = offset.height;
+		g.drawLine(xs + xOff, ys + yOff, xe + xOff, ye + yOff);
+	}
 
 }

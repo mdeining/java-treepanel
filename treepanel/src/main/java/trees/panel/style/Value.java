@@ -15,19 +15,16 @@ public class Value<T>{
 	public T getValue(Object object) {
 		if(object == null)
 			return value;
-		return this.getValue(object.getClass());
-	}
-	
-	public T getValue(Class<?> cls) {
-		if(cls == null)
+		Class<?> cls = null;
+		if(object instanceof Class)
+			cls = (Class<?>)object;
+		else
+			cls = object.getClass();
+		T value = values.get(cls);
+		if(value != null)
 			return value;
-		else{
-			T value = values.get(cls);
-			if(value != null)
-				return value;
-			else
-				return this.value;
-		}
+		else
+			return this.value;
 	}
 	
 	public void setValue(T value) {

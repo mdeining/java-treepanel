@@ -7,10 +7,9 @@ import java.util.Observable;
 
 import javax.swing.JPanel;
 
-import trees.layout.Label;
-import trees.layout.Node;
+import trees.layout.Action;
+import static trees.layout.Action.*;
 import static trees.panel.style.Orientation.*;
-import static trees.panel.style.Action.*;
 
 public class Style extends Observable{
 	
@@ -100,7 +99,7 @@ public class Style extends Observable{
 
 	public void setMaxDepth(int maxDepth) {
 		this.maxDepth = maxDepth;
-		this.notify(REBUILD);
+		this.notify(REPOSITION);
 	}
 
 	public int getSiblingSeparation() {
@@ -109,7 +108,7 @@ public class Style extends Observable{
 
 	public void setSiblingSeparation(int siblingSeparation) {
 		this.siblingSeparation = siblingSeparation;
-		this.notify(REBUILD);
+		this.notify(REPOSITION);
 	}
 
 	public int getSubtreeSeparation() {
@@ -118,7 +117,7 @@ public class Style extends Observable{
 
 	public void setSubtreeSeparation(int subtreeSeparation) {
 		this.subtreeSeparation = subtreeSeparation;
-		this.notify(REBUILD);
+		this.notify(REPOSITION);
 	}
 
 	public int getLevelSepartion() {
@@ -184,15 +183,11 @@ public class Style extends Observable{
 			this.placeHolder.setValue(placeHolder);
 		else
 			this.placeHolder.setValue(cls, placeHolder);
-		this.notify(RESET);
+		this.notify(REBUILD);
 	}
 	
 	public boolean usesPlaceHolder(Object obj){
-		return this.placeHolder.getValue(obj.getClass());
-	}
-
-	public boolean usesPlaceHolder(Class<?> cls){
-		return this.placeHolder.getValue(cls);
+		return this.placeHolder.getValue(obj);
 	}
 
 	///// Fonts & FontMetrics ////////////////////////////////////////////////////
@@ -202,7 +197,7 @@ public class Style extends Observable{
 	}
 	
 	public Font getFont(Object obj){
-		return this.font.getValue(obj.getClass());
+		return this.font.getValue(obj);
 	}
 	
 	public void setFont(Font font){
@@ -220,7 +215,7 @@ public class Style extends Observable{
 		if(size.isFixed())
 			this.notify(RECALCULATE);
 		else
-			this.notify(REBUILD);
+			this.notify(REPOSITION);
 	}
 	
 	public FontMetrics getFontMetrics(){
@@ -228,17 +223,13 @@ public class Style extends Observable{
 	}
 	
 	public FontMetrics getFontMetrics(Object obj){
-		return this.metrics.getValue(obj.getClass());
+		return this.metrics.getValue(obj);
 	}
 	
 	//// Size /////////////////////////////////////////////
 
-	private Size getSize(Class<?> cls){
-		return size.getValue(cls);
-	}
-	
 	public Size getSize(Object obj){
-		return size.getValue(obj.getClass());
+		return size.getValue(obj);
 	}
 	
 	public void setSize(Size size) {
@@ -247,27 +238,27 @@ public class Style extends Observable{
 
 	public void setSize(Class<?> cls, Size size) {
 		this.size.setValue(cls, size);
-		this.notify(REBUILD);
+		this.notify(REPOSITION);
 	}
 
 	public void unsetSize(Class<?> cls) {
 		this.size.setValue(cls, null);
-		this.notify(REBUILD);
+		this.notify(REPOSITION);
 	}
 	
-	public int getWidth(Node node){
-		Size size = this.getSize(node.getNodeClass());
-		Label label = node.getLabel(this);
-		int width = size.getWidth(this.hasVerticalOrientation(), this.hasPointerBoxes(node), label.getDimension());
-		return width;		
-	}
-
-	public int getHeight(Node node){
-		Size size = this.getSize(node.getNodeClass());	
-		Label label = node.getLabel(this);
-		int height = size.getHeight(this.hasVerticalOrientation(), this.hasPointerBoxes(node), label.getDimension());
-		return height;		
-	}
+//	public int getWidth(Node node){
+//		Size size = this.getSize(node.getModelClass());
+//		Label label = node.getLabel(this);
+//		int width = size.getWidth(this.hasVerticalOrientation(), this.hasPointerBoxes(node), label.getDimension());
+//		return width;		
+//	}
+//
+//	public int getHeight(Node node){
+//		Size size = this.getSize(node.getModelClass());	
+//		Label label = node.getLabel(this);
+//		int height = size.getHeight(this.hasVerticalOrientation(), this.hasPointerBoxes(node), label.getDimension());
+//		return height;		
+//	}
 	
 	///// Node-Layout ////////////////////////////////////
 	

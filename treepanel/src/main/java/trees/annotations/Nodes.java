@@ -1,4 +1,4 @@
-package trees.acessing;
+package trees.annotations;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

@@ -4,7 +4,7 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Rectangle;
 
-import trees.layout.Root;
+import trees.layout.Node;
 import trees.panel.style.Style;
 
 @SuppressWarnings("serial")
@@ -20,7 +20,7 @@ public class PanelOffset<T> extends Dimension{
 
 	protected void set(){
 		Style style = treePanel.getStyle();
-		Root root = treePanel.getRoot();
+		Node root = treePanel.getRoot();
 
 		if(root == null && !style.hasRootPointer())
 			return;
@@ -33,7 +33,7 @@ public class PanelOffset<T> extends Dimension{
 		
 		Rectangle rootArea, treeArea;
 		if(root != null){
-			rootArea = root.getNodeArea(style);
+			rootArea = root.getNodeArea();
 			treeArea = root.getTreeArea(style);
 		}else{
 			rootArea = new Rectangle();

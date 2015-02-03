@@ -44,7 +44,4 @@ public abstract class Size {
 
 	public abstract Dimension getMinimum();
 
-	protected abstract int getWidth(boolean hasVerticalOrientation, boolean hasPointerBoxes, Dimension label);
-	
-	protected abstract int getHeight(boolean hasVerticalOrientation, boolean hasPointerBoxes, Dimension label);
 }

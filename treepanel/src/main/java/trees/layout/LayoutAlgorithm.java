@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import trees.panel.style.Style;
+import static trees.layout.Action.*;
 
 public class LayoutAlgorithm {
 	
@@ -17,15 +18,18 @@ public class LayoutAlgorithm {
 	// A list of previous nodes at each level.
 	private Map<Integer, Node> previousNodes = new HashMap<>();
 	
-	public boolean positionTree (Style style, Root root){
-		return this.positionTree(style, root, true);
+	public boolean positionTree (Style style, Node root){
+		return this.positionTree(style, root, REPOSITION);
 	}
 	
-	public boolean recalculateTree (Style style, Root root){
-		return this.positionTree(style, root, false);
+	public boolean recalculateTree (Style style, Node root){
+		return this.positionTree(style, root, RECALCULATE);
 	}
 	
-	private boolean positionTree (Style style, Root root, boolean build){
+	private boolean positionTree (Style style, Node root, Action action){
+		if(action.atMost(REALIGN))
+			return true;
+		
 		if(style == null)
 			throw new NullPointerException("style must not be null");
 		
@@ -33,13 +37,13 @@ public class LayoutAlgorithm {
 			return true;
 
 		this.style = style;
-		
-		if(build){ // skip inital building process
+		root.init(style, action);
+
+		 // skip initial building process on RECALCULATE
+		if(action.atLeast(REPOSITION)){
 			previousNodes.clear();
-			root.initialize(true);
 			preliminaryPositioning(root, 0);
-		}else
-			root.initialize(false);
+		}
 		
 		// Determine how to adjust all the nodes with respect 
 		// to the location of the root.			
@@ -205,14 +209,14 @@ public class LayoutAlgorithm {
 		//Calculate only for leftNode
 		switch(style.getOrientation()){
 			case NORTH: case SOUTH:
-				nodeSize = leftNode.getWidth(style);
+				nodeSize = leftNode.getWidth();
 //				if(leftNode != null)
 //					nodeSize = nodeSize + leftNode.getRightSize(style);
 //				if(rightNode != null)
 //					nodeSize = nodeSize + rightNode.getLeftSize(style);
 				break;
 			case EAST: case WEST:
-				nodeSize = leftNode.getHeight(style);
+				nodeSize = leftNode.getHeight();
 //				if(leftNode != null)
 //					nodeSize = nodeSize + leftNode.getTopSize(style);
 //				if(rightNode != null)

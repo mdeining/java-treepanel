@@ -16,7 +16,7 @@ public class TreeDemo extends JFrame{
 		super("TreeDemo");
 		
 		Node root = this.sampleModel();
-		Style style = new Style(20, 20, 40);
+		Style style = new Style(20, 20, 40, Size.VARIABLE());
 //		style.setSize(Size.FIXED(40, 24));
 		style.setShape(Shape.ROUNDED_RECTANGLE);
 		

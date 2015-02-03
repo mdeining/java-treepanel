@@ -1,11 +1,9 @@
 package tests.layout;
 
 import static org.junit.Assert.assertEquals;
-import trees.acessing.WrappedNode;
-import trees.layout.Child;
 import trees.layout.LayoutAlgorithm;
+import trees.layout.ModelData;
 import trees.layout.Node;
-import trees.layout.Root;
 import trees.panel.style.Style;
 import static trees.panel.style.Size.*;
 
@@ -14,8 +12,7 @@ import org.junit.Test;
 
 public class TestLayoutAlgorithm {
 	
-	private Node a, b, c, d, e, f, g, h, i, j, k, l, m, n;
-	private Root o, root;
+	private Node a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, root;
 	private LayoutAlgorithm algorithm;
 	private Style style;
 	
@@ -31,37 +28,33 @@ public class TestLayoutAlgorithm {
 		}		
 	}
 	
-	private Child newChild(String label){
+	private Node newNode(String label){
 		Stub stub = new Stub(label);
-		WrappedNode wn = new WrappedNode(stub);
-		Child child = new Child(wn);
-		return child;
-	}
-	
-	private Root newRoot(String label){
-		Stub stub = new Stub(label);
-		WrappedNode wn = new WrappedNode(stub);
-		Root root = new Root(wn);
-		return root;
+		ModelData model = ModelData.newElement(stub, Stub.class, label, style);
+		Node node = new Node(model, style);
+		return node;
 	}
 	
 	@Before
 	public void setUp(){
-		a = newChild("A");
-		b = newChild("B");
-		c = newChild("C");
-		d = newChild("D");
-		e = newChild("E");
-		f = newChild("F");
-		g = newChild("G");
-		h = newChild("H");
-		i = newChild("I");
-		j = newChild("J");
-		k = newChild("K");
-		l = newChild("L");
-		m = newChild("M");
-		n = newChild("N");
-		o = newRoot("O");
+		style = new Style(40, 40, 40, FIXED(20, 20));
+		algorithm = new LayoutAlgorithm();
+
+		a = newNode("A");
+		b = newNode("B");
+		c = newNode("C");
+		d = newNode("D");
+		e = newNode("E");
+		f = newNode("F");
+		g = newNode("G");
+		h = newNode("H");
+		i = newNode("I");
+		j = newNode("J");
+		k = newNode("K");
+		l = newNode("L");
+		m = newNode("M");
+		n = newNode("N");
+		o = newNode("O");
 		o.add(e, f, n);
 		e.add(a, d);
 		d.add(b, c);
@@ -70,8 +63,6 @@ public class TestLayoutAlgorithm {
 		
 		root = o;
 		
-		algorithm = new LayoutAlgorithm();
-		style = new Style(40, 40, 40, FIXED(20, 20));
 	}
 	
 	@Test

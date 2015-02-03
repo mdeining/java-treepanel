@@ -1,7 +1,7 @@
 package application1.model;
 
-import trees.acessing.Nodes;
-import trees.acessing.Label;
+import trees.annotations.Nodes;
+import trees.annotations.Label;
 
 public class Node {
 	
