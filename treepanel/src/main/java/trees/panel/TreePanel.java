@@ -237,8 +237,20 @@ public class TreePanel<T> extends JPanel implements Observer{
 	 * @param style - The style to be set.
 	 */
 	public void setStyle(Style style) {
-		style.deleteObservers();
-		this.style.deleteObservers();
+		this.setStyle(style, true);
+	}
+	
+	/**
+	 * Sets a new Style for displaying a tree.
+	 * The tree is rebuild according to this new style.
+	 * @param style - The style to be set.
+	 * @param deleteObservers true, if the previous observers should be deleted.
+	 */
+	public void setStyle(Style style, boolean deleteObservers) {
+		if(deleteObservers){
+			style.deleteObservers();
+			this.style.deleteObservers();
+		}
 		this.style = style;
 		this.style.addObserver(this);
 		this.rebuild();
