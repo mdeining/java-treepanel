@@ -6,7 +6,7 @@ import java.util.Set;
 import trees.building.ModelNodeProcessor.Value;
 import trees.layout.Node;
 import trees.layout.ModelData;
-import trees.panel.style.Style;
+import trees.style.Style;
 
 /**
  * Helper class for analyzing a given tree. Only to be used 

@@ -13,7 +13,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import trees.panel.style.Style;
+import trees.style.Style;
 
 /**
  * This is a simple panel including a combo box for font selection 

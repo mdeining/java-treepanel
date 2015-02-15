@@ -23,10 +23,32 @@ public class ModelNodeProcessor{
 	private Class<?> type;	
 	private String label;
 	
+	/**
+	 * Inner class for wrapping a descendant. It consists of a pair of class and object.
+	 * If the object is not null, the class is simply the object's class. However,
+	 * if the object is null. The class gives a (sometimes heuristic) information about
+	 * the intended class here. The heuristic is needed, when the recursive elements
+	 * are stored in a {@link java.util.Collection Collection}, as the type information
+	 * is removed at runtime.
+	 * @author Marcus Deininger
+	 *
+	 */
 	protected class Value{
+		/**
+		 * The object's class, even if the object is null.
+		 */
 		protected Class<?> cls;
+		/**
+		 * The object itself. The object may be null.
+		 */
 		protected Object obj;
 		
+		/**
+		 * Initializes the value object.
+		 * @param cls Class to be used, if the object is null. Otherwise the object's
+		 * class is stored.
+		 * @param obj The object to be stored.
+		 */
 		public Value(Class<?> cls, Object obj) { 
 			if(obj == null){
 				this.cls = cls;
@@ -37,12 +59,22 @@ public class ModelNodeProcessor{
 			}
 		}
 		
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
 		public String toString(){ 
 			return "<" + cls.getName() + ", " + obj + ">"; 
 		}
 	}
 	private List<Value> children;
 
+	/**
+	 * Initializes a processor for model nodes. Upon initialization
+	 * the label and list of descending objects is extracted. This extraction 
+	 * can be controlled by the annotations {@link trees.annotations.Nodes Nodes},
+	 * {@link trees.annotations.Ignore Ignore}, and {@link trees.annotations.Label Label}.
+	 * @param obj The object to be analyzed.
+	 */
 	protected ModelNodeProcessor(Object obj) {
 		super();
 		this.type = obj.getClass();		
@@ -50,18 +82,34 @@ public class ModelNodeProcessor{
 		this.children = this.processDecendants(obj);
 	};
 
+	/**
+	 * Standard getter.
+	 * @return The class of the extracted object.
+	 */
 	protected Class<?> getType(){
 		return type;
 	}
 	
+	/**
+	 * Standard getter.
+	 * @return The label of the extracted object.
+	 */
 	protected String getLabel() {
 		return label;
 	}
 
+	/**
+	 * Standard getter.
+	 * @return The list of descendants of the extracted object.
+	 */
 	protected List<Value> getChildren(){
 		return children;
 	}
 	
+	/**
+	 * Returns true, if the object has at least one non-null descendant (if at all).
+	 * @return True, if the object has descendants.
+	 */
 	protected boolean hasChildren() {
 		for(Value value : children)
 			if(value.obj != null)

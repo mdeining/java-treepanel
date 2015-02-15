@@ -29,23 +29,23 @@ import trees.building.TreeBuilder;
 import trees.layout.Action;
 import trees.layout.LayoutAlgorithm;
 import trees.layout.Node;
-import trees.panel.style.Shape;
-import trees.panel.style.Style;
+import trees.style.Shape;
+import trees.style.Style;
 
 /**
  * A Swing component for displaying recursive tree structures. The placement
  * is calculated with the help of <i>Walker JQ II. A node-positioning algorithm 
- * for general trees. Software-Practice and Experience 1990; 20(7):685-705.</i><p>
+ * for general trees. Software—Practice and Experience 1990; 20(7):685–705.</i><p>
  * The usage is straight-forward: You have to supply a Style-object for the panel 
  * first. Then you can hand over the root of a tree (which has to be of the type of
  * the generic parameter T). The node is analyzed for recursive elements and
  * displayed. For a more fine-grained control over these elements the annotations
  * Nodes and Ignore are available.
  * 
- * @see trees.panel.style.Style
+ * @see trees.style.Style
  * 
  * @author Marcus Deininger
- * @version 1.1
+ * @version 1.2
  *
  * @param <T> The type of the recursive structure.
  */
@@ -699,6 +699,4 @@ public class TreePanel<T> extends JPanel implements Observer{
 		int yOff = offset.height;
 		g.drawLine(xs + xOff, ys + yOff, xe + xOff, ye + yOff);
 	}
-
-
 }

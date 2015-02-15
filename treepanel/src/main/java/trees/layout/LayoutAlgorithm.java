@@ -3,16 +3,16 @@ package trees.layout;
 import java.util.HashMap;
 import java.util.Map;
 
-import trees.panel.style.Style;
+import trees.style.Style;
 import static trees.layout.Action.*;
 
 /**
  * Internal core class for analyzing a given tree. Only to be used 
- * within the <code>{@link trees.panel.TreePanel TreePanel}</code>. 
+ * within the {@link trees.panel.TreePanel TreePanel}. 
  * This is basically an implementation of
  * <i>Walker JQ II. A node-positioning algorithm for general trees. 
  * Software-Practice and Experience 1990; 20(7):685-705.</i> with some
- * adaption for Java.
+ * adaptions for Java.
  * 
  * @author Marcus Deininger
  *

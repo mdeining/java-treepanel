@@ -5,7 +5,7 @@ import java.awt.FontMetrics;
 import java.awt.Rectangle;
 
 import trees.layout.Node;
-import trees.panel.style.Style;
+import trees.style.Style;
 
 /**
  * Helper class for calculating and storing the offset of the displayed tree.

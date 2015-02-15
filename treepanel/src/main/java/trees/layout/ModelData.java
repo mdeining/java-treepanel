@@ -4,8 +4,8 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.util.Arrays;
 
-import trees.panel.style.Size;
-import trees.panel.style.Style;
+import trees.style.Size;
+import trees.style.Style;
 
 /**
  * Helper class for encapsulating the data of the wrapped objects.

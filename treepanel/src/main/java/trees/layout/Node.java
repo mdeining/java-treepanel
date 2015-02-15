@@ -7,9 +7,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import trees.panel.style.Orientation;
-import trees.panel.style.Size;
-import trees.panel.style.Style;
+
+import trees.style.Orientation;
+import trees.style.Size;
+import trees.style.Style;
 import static trees.layout.Action.*;
 
 /**
