@@ -13,7 +13,7 @@ import java.util.Map;
  * 
  * @author Marcus Deininger
  *
- * @param <T>
+ * @param <T> The value type objects of this class hold.
  */
 public class Value<T>{
 

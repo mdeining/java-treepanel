@@ -31,9 +31,9 @@ public class LayoutAlgorithm {
 	
 	/**
 	 * Executes a full positioning algorithm on the given tree.
-	 * @param style - The style for displaying. This contains information about
+	 * @param style The style for displaying. This contains information about
 	 *   element separation, orientation, font, etc.
-	 * @param root - The root of the tree to be displayed.
+	 * @param root The root of the tree to be displayed.
 	 * @return Returns true if the positioning succeeded.
 	 */
 	public boolean positionTree (Style style, Node root){
@@ -43,9 +43,9 @@ public class LayoutAlgorithm {
 	/**
 	 * Executes a recalculation on the given tree. This can be done
 	 * when only the orientation of the tree has changed.
-	 * @param style - The style for displaying. This contains information about
+	 * @param style The style for displaying. This contains information about
 	 *   element separation, orientation, font, etc.
-	 * @param root - The root of the tree to be displayed.
+	 * @param root The root of the tree to be displayed.
 	 * @return Returns true if the positioning succeeded.
 	 */
 	public boolean recalculateTree (Style style, Node root){
@@ -82,12 +82,12 @@ public class LayoutAlgorithm {
 				xOffset = 0;
 				yOffset = getDrawingDepth(root, 0) * style.getLevelSepartion();
 				break;
-			case EAST: 
-				xOffset = 0;
+			case EAST:
+				xOffset = getDrawingDepth(root, 0) * style.getLevelSepartion();
 				yOffset = 0;
 				break;
-			case WEST:
-				xOffset = getDrawingDepth(root, 0) * style.getLevelSepartion();
+			case WEST: 
+				xOffset = 0;
 				yOffset = 0;
 				break;
 		}
@@ -240,10 +240,10 @@ public class LayoutAlgorithm {
 				xTemp = xOffset + node.prelim + modsum;
 				yTemp = yOffset - (level * style.getLevelSepartion()); break;
 			case EAST:
-				xTemp = xOffset + (level * style.getLevelSepartion());
+				xTemp = xOffset - (level * style.getLevelSepartion());
 				yTemp = yOffset + node.prelim + modsum; break;
 			case WEST:
-				xTemp = xOffset - (level * style.getLevelSepartion());
+				xTemp = xOffset + (level * style.getLevelSepartion());
 				yTemp = yOffset + node.prelim + modsum; break;
 		}
 		

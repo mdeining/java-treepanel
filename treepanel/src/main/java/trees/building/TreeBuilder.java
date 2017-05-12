@@ -25,8 +25,8 @@ public class TreeBuilder {
 	 * objects of the same type. <b> This method is intended to be used by
 	 * the TreePanel and not for outside use.</b>
 	 * 
-	 * @param tree - The root of the tree structure to be displayed.
-	 * @param style - The style of the tree to be displayed. 
+	 * @param tree The root of the tree structure to be displayed.
+	 * @param style The style of the tree to be displayed. 
 	 * 			This is needed for calculating the size of the nodes.
 	 * @return The tree representation for displaying.
 	 */

@@ -36,8 +36,8 @@ public class Node implements Iterable<Node> {
 	/**
 	 * Constructor for creating a node wrapper.
 	 * 
-	 * @param model - The object to be wrapped.
-	 * @param style - The displaying style to be used.
+	 * @param model The object to be wrapped.
+	 * @param style The displaying style to be used.
 	 */
 	public Node(ModelData model, Style style) {
 		this.model = model;
@@ -47,7 +47,7 @@ public class Node implements Iterable<Node> {
 	/**
 	 * Adds some nodes to the current node.
 	 * 
-	 * @param children - The nodes to be added.
+	 * @param children The nodes to be added.
 	 */
 	public void add(Node ... children){
 		int i = hasChild.length;
@@ -133,7 +133,7 @@ public class Node implements Iterable<Node> {
 
 	/**
 	 * Returns the x-coordinate of the node which starts top left.
-	 * @return - The x-coordinate of the node
+	 * @return The x-coordinate of the node
 	 */
 	public int getX() {
 		return xCoordinate;
@@ -141,7 +141,7 @@ public class Node implements Iterable<Node> {
 
 	/**
 	 * Returns the y-coordinate of the node which starts top left.
-	 * @return - The y-coordinate of the node
+	 * @return The y-coordinate of the node
 	 */
 	public int getY() {
 		return yCoordinate;
@@ -149,7 +149,8 @@ public class Node implements Iterable<Node> {
 
 	/**
 	 * Returns the x-coordinate with an added offset.
-	 * @return - The x-coordinate of the node with offset.
+	 * @param offset The offset to be added.
+	 * @return The x-coordinate of the node with offset.
 	 */
 	public int getX(int offset) {
 		return xCoordinate + offset;
@@ -157,7 +158,8 @@ public class Node implements Iterable<Node> {
 
 	/**
 	 * Returns the y-coordinate with an added offset.
-	 * @return - The y-coordinate of the node with offset.
+	 * @param offset The offset to be added.
+	 * @return The y-coordinate of the node with offset.
 	 */
 	public int getY(int offset) {
 		return yCoordinate + offset;
@@ -165,7 +167,7 @@ public class Node implements Iterable<Node> {
 
 	/**
 	 * Returns the preliminary coordinate.
-	 * @return - The preliminary coordinate of the node.
+	 * @return The preliminary coordinate of the node.
 	 */
 	public int getPrelim() {
 		return prelim;
@@ -173,7 +175,7 @@ public class Node implements Iterable<Node> {
 
 	/**
 	 * Returns the modifier, which gives an additional placement.
-	 * @return - The placement modifier.
+	 * @return The placement modifier.
 	 */
 	public int getModifier() {
 		return modifier;
@@ -181,7 +183,7 @@ public class Node implements Iterable<Node> {
 	
 	/**
 	 * Returns the size of the contained label.
-	 * @return - The size of the contained label.
+	 * @return The size of the contained label.
 	 */
 	public Dimension getLabelSize(){
 		return model.getLabelSize();
@@ -189,7 +191,7 @@ public class Node implements Iterable<Node> {
 	
 	/**
 	 * Returns the label split into lines.
-	 * @return - The lines of the label.
+	 * @return The lines of the label.
 	 */
 	public String[]	getLabelLines(){
 		return model.getLines();
@@ -199,8 +201,8 @@ public class Node implements Iterable<Node> {
 	 * Calculates the rectangle which is taken by the tree
 	 * with respect to the style. By default this rectangle
 	 * starts top left at (0|0). An offset is added later.
-	 * @param style - The style for this tree.
-	 * @return - The rectangle covered by this tree.
+	 * @param style The style for this tree.
+	 * @return The rectangle covered by this tree.
 	 */
 	public Rectangle getTreeArea(Style style){
 		// By definition, the coordinates are without offset
@@ -225,7 +227,7 @@ public class Node implements Iterable<Node> {
 	
 	/**
 	 * Returns the rectangle coordinates for this node.
-	 * @return - The rectangle coordinates for this node.
+	 * @return The rectangle coordinates for this node.
 	 */
 	public Rectangle getNodeArea(){
 		return new Rectangle(xCoordinate, yCoordinate, width, height);
@@ -233,7 +235,8 @@ public class Node implements Iterable<Node> {
 
 	/**
 	 * Returns the rectangle coordinates for this node with an added offset.
-	 * @return - The rectangle coordinates for this node with an added offset.
+	 * @param offset The offset to be added.
+	 * @return The rectangle coordinates for this node with an added offset.
 	 */
 	public Rectangle getNodeArea(Dimension offset){
 		return new Rectangle(xCoordinate + offset.width, yCoordinate + offset.height, width, height);
@@ -241,7 +244,8 @@ public class Node implements Iterable<Node> {
 
 	/**
 	 * Returns the rectangle coordinates for this nodes' label with an added offset.
-	 * @return - The rectangle coordinates for this label with an added offset.
+	 * @param offset The offset to be added.
+	 * @return The rectangle coordinates for this label with an added offset.
 	 */
 	public Rectangle getLabelArea(Dimension offset){
 		Rectangle area = this.getLabelArea();
@@ -250,7 +254,7 @@ public class Node implements Iterable<Node> {
 
 	/**
 	 * Returns the rectangle coordinates for this nodes' label.
-	 * @return - The rectangle coordinates for this label.
+	 * @return The rectangle coordinates for this label.
 	 */
 	public Rectangle getLabelArea(){
 		int xOff = Style.LABEL_MARGIN;
@@ -262,9 +266,9 @@ public class Node implements Iterable<Node> {
 				case NORTH:	height = height - Style.POINTER_BOX_HEIGHT; break;
 				case SOUTH:	height = height - Style.POINTER_BOX_HEIGHT; 
 							yOff = yOff + Style.POINTER_BOX_HEIGHT; break;
-				case EAST:	width = width - Style.POINTER_BOX_HEIGHT; break;
-				case WEST:	width = width - Style.POINTER_BOX_HEIGHT; 
+				case EAST:	width = width - Style.POINTER_BOX_HEIGHT; 
 							xOff = xOff + Style.POINTER_BOX_HEIGHT; break;
+				case WEST:	width = width - Style.POINTER_BOX_HEIGHT; break;
 			}
 		return new Rectangle(xCoordinate + xOff, yCoordinate + yOff, width, height);
 	}
@@ -273,8 +277,8 @@ public class Node implements Iterable<Node> {
 	
 	/**
 	 * Initializes the tree recursively.
-	 * @param style - The style to be used.
-	 * @param action - The initalization level.
+	 * @param style The style to be used.
+	 * @param action The initialization level.
 	 */
 	protected void init(Style style, Action action){
 		model.align(style);
@@ -405,7 +409,7 @@ public class Node implements Iterable<Node> {
 	/**
 	 * Checks if the node has a child at index
 	 * which is not null.
-	 * @param index - Index of the child to be checked.
+	 * @param index Index of the child to be checked.
 	 * @return true, if the has a non-null child at index.
 	 */
 	public boolean hasChild(int index) {
@@ -446,6 +450,5 @@ public class Node implements Iterable<Node> {
 			return this.height;
 		else
 			return this.width;
-	}
-	
+	}	
 }

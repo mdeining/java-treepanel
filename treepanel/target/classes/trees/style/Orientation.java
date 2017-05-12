@@ -14,10 +14,10 @@ public enum Orientation {
 	 * (Vertical) bottom-up orientation of the tree.
 	 */
 	SOUTH(false), /**
-	 * (Horizontal) left-to-right orientation of the tree.
+	 * (Horizontal) right-to-left orientation of the tree.
 	 */
 	EAST(true), /**
-	 * (Horizontal) right-to-left orientation of the tree.
+	 * (Horizontal) left-to-right orientation of the tree.
 	 */
 	WEST(true);
 	

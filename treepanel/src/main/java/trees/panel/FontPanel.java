@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -39,16 +41,30 @@ public class FontPanel extends JPanel {
 	private Style style;
 	private JComboBox<String> familyComboBox;
 	private SpinnerNumberModel sizeModel;
+	private boolean maintainLevelRatio;
 	private double levelRatio;
+	
+	private List<ChangeListener> listeners	= new ArrayList<>();
 	
 	/**
 	 * Creates a new font panel which can be used directly in a graphical user interface.
+	 * By default, the level ratio will be maintained.
 	 * @param style The style which will be changed by the widget.
 	 */
 	public FontPanel(Style style) {
+		this(style, true);
+	}
+
+	/**
+	 * Creates a new font panel which can be used directly in a graphical user interface.
+	 * @param style The style which will be changed by the widget.
+	 * @param maintainLevelRatio flag if the level ratio should be maintained.
+	 */
+	public FontPanel(Style style, boolean maintainLevelRatio) {
 		super(new BorderLayout(0, 0));
 		
 		this.style = style;
+		this.maintainLevelRatio = maintainLevelRatio;
 		
 		Font font = style.getFont();
 		String fontFamilyName = font.getFamily();
@@ -90,7 +106,8 @@ public class FontPanel extends JPanel {
 			
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				updateFont();			}
+				updateFont();
+			}
 		});
 		
 	}
@@ -100,8 +117,30 @@ public class FontPanel extends JPanel {
 		int fontSize = (int) sizeModel.getValue();
 		Font font = new Font(fontFamilyName, 0, fontSize);
 		style.setFont(font);
-		int levelSeparation = (int) (levelRatio * style.getFontMetrics().getHeight());
-		style.setLevelSeparation(levelSeparation);
+		if(maintainLevelRatio){
+			int levelSeparation = (int) (levelRatio * style.getFontMetrics().getHeight());
+			style.setLevelSeparation(levelSeparation);
+		}
+		
+		for(ChangeListener listener : listeners)
+			listener.stateChanged(new ChangeEvent(font));
+	}
+
+	/**
+	 * Adds a ChangeListener to the model's listener list. The ChangeListeners must 
+	 * be notified when the models value changes.
+	 * @param listener the ChangeListener to add
+	 */
+	public void addChangeListener(ChangeListener listener){
+		listeners.add(listener);
+	}
+
+	/**
+	 * Removes a ChangeListener from the model's listener list.
+	 * @param listener the ChangeListener to remove
+	 */
+	public void removeChangeListener(ChangeListener listener){
+		listeners.remove(listener);
 	}
 
 }
