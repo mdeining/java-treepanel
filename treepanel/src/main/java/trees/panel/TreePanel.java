@@ -38,7 +38,7 @@ import trees.style.Style;
 /**
  * A Swing component for displaying recursive tree structures. The placement
  * is calculated with the help of <i>Walker JQ II. A node-positioning algorithm 
- * for general trees. Software—Practice and Experience 1990; 20(7):685–705.</i><p>
+ * for general trees. Software-Practice and Experience 1990; 20(7):685-705.</i><p>
  * The usage is straight-forward: You have to supply a Style-object for the panel 
  * first. Then you can hand over the root of a tree (which has to be of the type of
  * the generic parameter T). The node is analyzed for recursive elements and
