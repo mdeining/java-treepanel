@@ -247,10 +247,11 @@ public class LayoutAlgorithm {
 				yTemp = yOffset + node.prelim + modsum; break;
 		}
 		
+// 		Draw always - otherwise this gives strange results
 		// Check to see that xTemp and yTemp are of the proper size for your application.
-		if (!checkExtentsRange(xTemp, yTemp))
-			// Continuing would put the tree outside of the drawable extents range.
-			return false;
+//		if (!checkExtentsRange(xTemp, yTemp))
+//			// Continuing would put the tree outside of the drawable extents range.
+//			return false;
 		
 		node.xCoordinate = xTemp;
 		node.yCoordinate = yTemp;
@@ -264,10 +265,10 @@ public class LayoutAlgorithm {
 		return ok;
 	}
 
-	private boolean checkExtentsRange(int xValue, int yValue) {
-		// xValue is a valid value for the x-coordinate
-		// yValue is a valid value for the у-coordinate
-		return (xValue >= 0 && yValue >= 0);
-	}
+//	private boolean checkExtentsRange(int xValue, int yValue) {
+//		// xValue is a valid value for the x-coordinate
+//		// yValue is a valid value for the у-coordinate
+//		return (xValue >= 0 && yValue >= 0);
+//	}
 
 }

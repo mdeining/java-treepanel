@@ -370,6 +370,28 @@ public class TreePanel<T> extends JPanel implements Observer{
 	}
 	
 	/**
+	 * Replaces the nodes collored with a given color with a new color.
+	 * @param oldColor The color to be replaced.
+	 * @param newColor The color to be used instead.
+	 */
+	public void replaceNodeColor(Color oldColor, Color newColor){
+		for(Object node : nodeColors.keySet())
+			if(nodeColors.get(node) == oldColor)
+				nodeColors.put(node, newColor);
+		this.repaint();
+	}
+		
+	/**
+	 * Replaces the color of all colored nodes with a new color.
+	 * @param newColor The color to be used instead.
+	 */
+	public void replaceNodeColor(Color newColor){
+		for(Object node : nodeColors.keySet())
+			nodeColors.put(node, newColor);
+		this.repaint();
+	}
+
+	/**
 	 * Removes the color from the supplied nodes.
 	 * @param nodes The nodes to be uncolored.
 	 */
