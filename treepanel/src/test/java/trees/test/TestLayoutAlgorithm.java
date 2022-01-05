@@ -1,5 +1,12 @@
-package tests.layout;
+package trees.test;
 
+/*
+ * This is the layout example as described in the paper:
+ *   Walker, JQ II: A node-positioning algorithm for general trees.
+ *   Software-Practice and Experience 1990; 20(7):685-705.
+ * The numbers are multiplied by ten which allows to use the 
+ * same numbers in the TreePanel too.
+ */
 import static org.junit.Assert.assertEquals;
 import trees.layout.LayoutAlgorithm;
 import trees.layout.ModelData;

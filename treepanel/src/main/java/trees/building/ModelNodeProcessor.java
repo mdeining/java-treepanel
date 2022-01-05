@@ -7,17 +7,39 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import trees.annotations.Ignore;
 import trees.annotations.Label;
 import trees.annotations.Nodes;
 
+/**
+ * Helper class for analyzing a given node. Only to be used 
+ * within the TreePanel.
+ * 
+ * @author Marcus Deininger
+ *
+ */
 public class ModelNodeProcessor{
 	
 	private Class<?> type;	
 	private String label;
 	
 	protected class Value{
-		protected Class<?> cls; protected Object obj;
-		public Value(Class<?> cls, Object obj) { this.cls = cls; this.obj = obj; }		
+		protected Class<?> cls;
+		protected Object obj;
+		
+		public Value(Class<?> cls, Object obj) { 
+			if(obj == null){
+				this.cls = cls;
+				this.obj = null;
+			}else{
+				this.cls = obj.getClass();
+				this.obj = obj;
+			}
+		}
+		
+		public String toString(){ 
+			return "<" + cls.getName() + ", " + obj + ">"; 
+		}
 	}
 	private List<Value> children;
 
@@ -80,35 +102,6 @@ public class ModelNodeProcessor{
 	}
 
 	// Descendant extraction /////////////////////////////
-	
-//	@Override
-//	public Class<?> getNodeClass(){
-//		return obj.getClass();
-//	}
-//	
-//	@Override
-//	public Object getNode(){
-//		return obj;
-//	}
-//	
-//	public List<?> getDescendants() {
-//		return descendants;
-//	}
-//	
-//
-//	public boolean hasDescendants() {
-//		for(Object descendant : descendants)
-//			if(descendant != null)
-//				return true;
-//		return false;
-//	}
-//
-//	public Class<?> getFirstDescendant() {
-//		for(Object descendant : descendants)
-//			if(descendant != null)
-//				return descendant.getClass();
-//		return null;
-//	}
 
 	private List<Value> processDecendants(Object object) {
 		List<Field> fields = getAllDeclaredFields(object.getClass());
@@ -145,13 +138,14 @@ public class ModelNodeProcessor{
 
 	private List<Field>  getRecursiveFields(Object object, List<Field> fields) {
 		List<Field> recursiveFields = new ArrayList<>();
-		for(Field field : fields)				
-			if(isRecursiveSkalarField(object, field))
-				recursiveFields.add(field);
-			else if(isRecursiveArrayField(object, field))
-				recursiveFields.add(field);						
-			else if(isRecursiveCollectionField(object, field))
-				recursiveFields.add(field);
+		for(Field field : fields)
+			if(!field.isAnnotationPresent(Ignore.class))
+				if(isRecursiveSkalarField(object, field))
+					recursiveFields.add(field);
+				else if(isRecursiveArrayField(object, field))
+					recursiveFields.add(field);						
+				else if(isRecursiveCollectionField(object, field))
+					recursiveFields.add(field);
 		return recursiveFields;
 	}
 	
@@ -257,10 +251,7 @@ public class ModelNodeProcessor{
 						break;
 					}
 				for(Object element : collection)
-					if(element != null)
-						values.add(new Value(element.getClass(), element));
-					else
-						values.add(new Value(componentType, null));
+					values.add(new Value(componentType, element));
 			}
 			return values;
 		} catch (Exception e) {

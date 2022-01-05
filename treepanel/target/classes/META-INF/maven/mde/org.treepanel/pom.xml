@@ -5,7 +5,7 @@
 
 	<groupId>mde</groupId>
 	<artifactId>org.treepanel</artifactId>
-	<version>1.0</version>
+	<version>1.1</version>
 	<name>Java-Treepanel-Widget</name>
 	<description>A Swing widget for easily displaying trees based on 
 		Walker, John Q. II. A Node-Positioning Algorithm for 

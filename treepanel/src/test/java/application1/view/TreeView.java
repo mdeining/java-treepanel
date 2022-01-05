@@ -12,6 +12,8 @@ import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -33,10 +35,11 @@ import trees.panel.style.Orientation;
 import trees.panel.style.Shape;
 import trees.panel.style.Style;
 import trees.panel.TreePanel;
+import trees.panel.TreePanel.NodeSelector;
 
 
 @SuppressWarnings("serial")
-public class TreeView extends JFrame {
+public class TreeView extends JFrame implements Observer{
 	
 	private static final int INITIAL_DEPTH = 10;
 
@@ -127,7 +130,11 @@ public class TreeView extends JFrame {
 		orientationGroup.add(westRb);
 		northRb.setSelected(true);
 		
-		Style style = new Style();
+		int siblingSeparation = 40;
+		int subtreeSeparation = 40;
+		int levelSepartion = 60;
+		
+		Style style = new Style(siblingSeparation, subtreeSeparation, levelSepartion);
 		verticalGroup = new ButtonGroup();
 		leftRb.setSelected(true);
 		style.setVerticalAlignment(TOP);
@@ -159,9 +166,6 @@ public class TreeView extends JFrame {
 		
 		style.setShape(Shape.ROUNDED_RECTANGLE);
 		style.setPointerBoxes(true);
-		style.setLevelSepartion(60);
-		style.setSiblingSeparation(40);
-		style.setSubtreeSeparation(40);
 		
 //		style.setSize(FIXED(50, 30));
 //		style.setSize(FIXED(60, 50));
@@ -172,13 +176,15 @@ public class TreeView extends JFrame {
 		
 		style.setFont(new Font(initFontFamily, 0, initFontSize));
 		
-		style.setRootPointer(true);
+//		style.setRootPointer("root");
 		style.setPlaceHolder(false);
 		
 		treePanel = new TreePanel<>(style, root);
 		
 		treePanel.setNodeColor(Color.BLUE, root.getLeft());
 		treePanel.setSubtreeColor(Color.RED, root.getRight());
+		
+		treePanel.addObserver(this);
 	}
 	
 	private JPanel createWidgetLayout() {
@@ -367,7 +373,13 @@ public class TreeView extends JFrame {
 		treePanel.getStyle().setFont(f);
 	}
 
-	
+	@Override
+	public void update(Observable o, Object arg) {
+		if(o instanceof NodeSelector){
+			System.out.println("selected: " + arg);
+		}
+		
+	}
 
 	public static void main(String[] args) {
 		new TreeView();	

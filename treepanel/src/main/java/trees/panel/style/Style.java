@@ -11,6 +11,27 @@ import trees.layout.Action;
 import static trees.layout.Action.*;
 import static trees.panel.style.Orientation.*;
 
+/**
+ * A component for configuring the layout of a displayed tree. The style lets
+ * you configure:
+ * <ul style="list-style-type:disc">
+ * <li>The spacings (in pixels) between siblings, subtrees, and levels. (Defaults: 0)</li>
+ * <li>The maximum drawing depth, with 0 only displaying the root. (Default: Integer.MAX_VALUE)</li>
+ * <li>The orientation, vertical, and horizontal alignment of the tree. (Default: NORTH|TOP|LEFT)</li>
+ * <li>The usage and naming of a root label. (Default: none)</li>
+ * <li>The usage of pointer boxes - overall or for explicit node classes. (Default: false)</li>
+ * <li>The usage of placeholder - overall or for explicit node classes. (Default: false)</li>
+ * <li>The label font - overall or for explicit node classes. (Default: JPanel-Font)</li>
+ * <li>The node box size - overall or for explicit node classes. (Default: VARIABLE())</li>
+ * <li>The node shape - overall or for explicit node classes. (Default: RECTANGLE)</li>
+ * </ul>
+ * 
+ * @see trees.panel.TreePanel
+ * 
+ * @author Marcus Deininger
+ * @version 1.1
+ *
+ */
 public class Style extends Observable{
 	
 	private static final int DEFAULT_DEPTH = Integer.MAX_VALUE;
@@ -22,8 +43,8 @@ public class Style extends Observable{
 
 	
 	public static final int TREE_MARGIN = 8;	
+	private static final int MIN_LEVEL_SEPARATION = 4;
 
-	public static String ROOT = "root";
 	public static String NULL = "null";	
 	public static int ROOT_ARROW_LENGTH = 20;
 	public static int ROOT_ARROW_HEAD = 4;
@@ -33,7 +54,7 @@ public class Style extends Observable{
 	
 	public static final int LABEL_MARGIN = 4;	
 	public static final Dimension MIN_DIMENSION = new Dimension(0, 0);
-	public static final Dimension MAX_DIMENSION = new Dimension(1920, 1080);
+	private static final Dimension MAX_DIMENSION = new Dimension(1920, 1080);
 	public static final String ETC = "...";
 
 	private static final JPanel panel = new JPanel();
@@ -43,7 +64,7 @@ public class Style extends Observable{
 	private Orientation orientation;
 	private Alignment horizontalAlignment, verticalAlignment;
 	
-	private boolean rootPointer;
+	private String rootLabel = null;
 	
 	// Possible class specific settings
 	private Value<Font> font = new Value<>();
@@ -53,6 +74,10 @@ public class Style extends Observable{
 	private Value<Boolean> pointerBoxes = new Value<>();
 	private Value<Boolean> placeHolder = new Value<>();
 	
+	/**
+	 * Initializes style with default values. 
+	 * @see trees.panel.style.Style Style
+	 */
 	public Style(){
 		super();
 		this.maxDepth = DEFAULT_DEPTH;
@@ -70,6 +95,14 @@ public class Style extends Observable{
 		this.setPlaceHolder(false);
 	}
 
+	/**
+	 * Initializes separation of siblings, subtrees and levels; 
+	 * all others are set to default values. 
+	 * @see trees.panel.style.Style Style
+	 * @param siblingSeparation Separation of adjacent siblings counted in pixels.
+	 * @param subtreeSeparation Separation of adjacent subtrees counted in pixels.
+	 * @param levelSepartion Separation of adjacent levels counted in pixels.
+	 */
 	public Style(int siblingSeparation, int subtreeSeparation, int levelSepartion) {
 		this();
 		this.siblingSeparation = siblingSeparation;
@@ -77,6 +110,15 @@ public class Style extends Observable{
 		this.levelSepartion = levelSepartion;
 	}
 
+	/**
+	 * Initializes separation of siblings, subtrees and levels; 
+	 * all others are set to default values. 
+	 * @see trees.panel.style.Style Style
+	 * @param siblingSeparation Separation of adjacent siblings counted in pixels.
+	 * @param subtreeSeparation Separation of adjacent subtrees counted in pixels.
+	 * @param levelSepartion Separation of adjacent levels counted in pixels.
+	 * @param size Size properties of all boxes.
+	 */
 	public Style(int siblingSeparation, int subtreeSeparation, int levelSepartion, Size size) {
 		this();
 		this.siblingSeparation = siblingSeparation;
@@ -93,69 +135,152 @@ public class Style extends Observable{
 	
 	//// Tree Geometry //////////////////////////////////
 	
+	/**
+	 * Standard getter.
+	 * @return Maximum drawing level depth.
+	 */
 	public int getMaxDepth() {
 		return maxDepth;
 	}
 
+	/**
+	 * Standard setter with notification of change.
+	 * @param maxDepth Maximum drawing level depth.
+	 */
 	public void setMaxDepth(int maxDepth) {
 		this.maxDepth = maxDepth;
 		this.notify(REPOSITION);
 	}
 
+	/**
+	 * Standard getter.
+	 * @return Separation of adjacent siblings counted in pixels.
+	 */
 	public int getSiblingSeparation() {
 		return siblingSeparation;
 	}
 
+	/**
+	 * Standard setter with notification of change.
+	 * @param siblingSeparation Separation of adjacent siblings counted in pixels.
+	 */
 	public void setSiblingSeparation(int siblingSeparation) {
 		this.siblingSeparation = siblingSeparation;
 		this.notify(REPOSITION);
 	}
 
+	/**
+	 * Standard getter.
+	 * @return Separation of adjacent subtrees counted in pixels.
+	 */
 	public int getSubtreeSeparation() {
 		return subtreeSeparation;
 	}
 
+	/**
+	 * Standard setter with notification of change.
+	 * @param subtreeSeparation Separation of adjacent subtrees counted in pixels.
+	 */
 	public void setSubtreeSeparation(int subtreeSeparation) {
 		this.subtreeSeparation = subtreeSeparation;
 		this.notify(REPOSITION);
 	}
 
+	/**
+	 * Standard getter.
+	 * @return Separation of adjacent levels counted in pixels.
+	 */
 	public int getLevelSepartion() {
 		return levelSepartion;
 	}
 
-	public void setLevelSepartion(int levelSepartion) {
+	/**
+	 * Standard setter with notification of change.
+	 * @param levelSepartion Separation of adjacent levels counted in pixels.
+	 */
+	public void setLevelSeparation(int levelSepartion) {
 		this.levelSepartion = levelSepartion;
 		this.notify(RECALCULATE);
 	}
 	
+	/**
+	 * Calculates the maximum dimension a node can take. This is restricted
+	 * by the available space between the levels and an additional margin.
+	 * @return The maximum dimension a node can take.
+	 */
+	public Dimension getMaxDimension(){
+		return this.getMaxDimension(MAX_DIMENSION);
+	}
 	
+	/**
+	 * Calculates the maximum dimension a node can take. This is restricted
+	 * by the available space between the levels and an additional margin and
+	 * the dimension parameter.
+	 * @param dimension The dimension to be compared with.
+	 * @return The maximum dimension a node can take.
+	 */
+	public Dimension getMaxDimension(Dimension dimension){
+		int maxSize = this.getLevelSepartion() - MIN_LEVEL_SEPARATION;
+		if(orientation.isVertical())
+			return new Dimension(dimension.width, (dimension.height < maxSize ? dimension.height : maxSize));
+		else
+			return new Dimension((dimension.width < maxSize ? dimension.width : maxSize), dimension.height);
+	}
 
 	//// Orientation & Alignment //////////////////////////////////
 	
+	/**
+	 * Standard getter.
+	 * @return Orientation of the overall tree.
+	 */
 	public Orientation getOrientation() {
 		return orientation;
 	}
 
+	/**
+	 * Setter with notification of change.
+	 * @param orientation Orientation of the overall tree.
+	 */
 	public void setOrientation(Orientation orientation) {
 		if(this.orientation == orientation)
 			return;
 		this.orientation = orientation;
-		this.notify(RECALCULATE);
+		this.notify(REPOSITION);
 	}
 
+	
+	/**
+	 * Checks if the tree has a vertical orientation, i.e. top down or bottom up.
+	 * @return true, if orientation is <code>NORTH</code> or <code>SOUTH</code>.
+	 */
 	public boolean hasVerticalOrientation(){
 		return orientation == NORTH || orientation == SOUTH;
 	}
 	
+	/**
+	 * Checks if the tree has a horizontal orientation, i.e. left to right or right to left.
+	 * @return true, if orientation is <code>EAST</code> or <code>WEST</code>.
+	 */
 	public boolean hasHorizontalOrientation(){
 		return orientation == EAST || orientation == WEST;
 	}
 
+	/**
+	 * Standard getter.
+	 * @return Horizontal alignment of the tree, which may be 
+	 * <code>LEFT</code>, <code>TREE_CENTERED</code>, <code>ROOT_CENTERED</code>, 
+	 * or <code>RIGHT</code>.
+	 */
 	public Alignment getHorizontalAlignment() {
 		return horizontalAlignment;
 	}
 
+	/**
+	 * Setter with notification of change.
+	 * @param horizontalAlignment Horizontal alignment of the tree, which may be 
+	 * <code>LEFT</code>, <code>TREE_CENTERED</code>, <code>ROOT_CENTERED</code>, 
+	 * or <code>RIGHT</code>.
+	 */
 	public void setHorizontalAlignment(Alignment horizontalAlignment) {
 		if(this.horizontalAlignment == horizontalAlignment)
 			return;
@@ -163,10 +288,22 @@ public class Style extends Observable{
 		this.notify(REALIGN);
 	}
 
+	/**
+	 * Standard getter.
+	 * @return Vertical alignment of the tree, which may be 
+	 * <code>TOP</code>, <code>TREE_CENTERED</code>, <code>ROOT_CENTERED</code>, 
+	 * or <code>BOTTOM</code>.
+	 */
 	public Alignment getVerticalAlignment() {
 		return verticalAlignment;
 	}
 
+	/**
+	 * Setter with notification of change.
+	 * @param verticalAlignment Vertical alignment of the tree, which may be 
+	 * <code>TOP</code>, <code>TREE_CENTERED</code>, <code>ROOT_CENTERED</code>, 
+	 * or <code>BOTTOM</code>.
+	 */
 	public void setVerticalAlignment(Alignment verticalAlignment) {
 		if(this.verticalAlignment == verticalAlignment)
 			return;
@@ -174,11 +311,24 @@ public class Style extends Observable{
 		this.notify(REALIGN);
 	}
 	
+	/**
+	 * Sets the usage of place holders to all tree nodes. Place holders
+	 * are calculated as nodes but not drawn. This is useful if you 
+	 * want to have spread nodes.
+	 * @param placeHolder true, when to use place holders.
+	 */
 	public void setPlaceHolder(boolean placeHolder){
-		this.setUsesPlaceHolder(null, placeHolder);
+		this.setPlaceHolder(null, placeHolder);
 	}
 
-	public void setUsesPlaceHolder(Class<?> cls, boolean placeHolder){
+	/**
+	 * Sets the usage of place holders to all tree nodes of type <code>cls</code>. Place holders
+	 * are calculated as nodes but not drawn. This is useful if you 
+	 * want to have spread nodes.
+	 * @param cls class for which the property to be set.
+	 * @param placeHolder true, when to use place holders.
+	 */
+	public void setPlaceHolder(Class<?> cls, boolean placeHolder){
 		if(cls == null)
 			this.placeHolder.setValue(placeHolder);
 		else
@@ -186,24 +336,51 @@ public class Style extends Observable{
 		this.notify(REBUILD);
 	}
 	
-	public boolean usesPlaceHolder(Object obj){
-		return this.placeHolder.getValue(obj);
+	/**
+	 * Returns the placeholder property of a given class.
+	 * If the class is not registered with the property,
+	 * the overall value is returned.
+	 * @param cls Class for which the property to be returned.
+	 * @return true, if place holders to be used.
+	 */
+	public boolean usesPlaceHolder(Class<?> cls){
+		return this.placeHolder.getValue(cls);
 	}
 
 	///// Fonts & FontMetrics ////////////////////////////////////////////////////
 	
+	/**
+	 * Returns the overall font to be used for drawing a node.
+	 * @return The overall node font.
+	 */
 	public Font getFont(){
 		return this.font.getValue();
 	}
 	
-	public Font getFont(Object obj){
-		return this.font.getValue(obj);
+	/**
+	 * Returns the font to be used for drawing a node of type <code>cls</code>.
+	 * If no font is registered for the type, the default font is returned instead.
+	 * @param cls class for which the property to be gotten.
+	 * @return The  node font for <code>cls</code>.
+	 */
+	public Font getFont(Class<?> cls){
+		return this.font.getValue(cls);
 	}
 	
+	/**
+	 * Sets the font for all nodes. Also sets the corresponding font metrics.
+	 * @param font The font to be set.
+	 */
 	public void setFont(Font font){
 		this.setFont(null, font);
 	}
 	
+	/**
+	 * Sets the font for a node of type <code>cls</code>.
+	 * Also sets the font metrics for this type.
+	 * @param cls class for which the property to be set.
+	 * @param font The font to be set.
+	 */
 	public void setFont(Class<?> cls, Font font){
 		if(this.font.getValue(cls) == font)
 			return;
@@ -218,91 +395,152 @@ public class Style extends Observable{
 			this.notify(REPOSITION);
 	}
 	
+	/**
+	 * Gets the overall font metrics.
+	 * @return The overall font metrics.
+	 */
 	public FontMetrics getFontMetrics(){
 		return this.metrics.getValue();
 	}
 	
-	public FontMetrics getFontMetrics(Object obj){
-		return this.metrics.getValue(obj);
+	/**
+	 * Gets the font metrics for a node of type <code>cls</code>.
+	 * @return The font metrics for <code>cls</code>.
+	 */
+	public FontMetrics getFontMetrics(Class<?> cls){
+		return this.metrics.getValue(cls);
 	}
 	
 	//// Size /////////////////////////////////////////////
 
-	public Size getSize(Object obj){
-		return size.getValue(obj);
+	/**
+	 * Gets the Size for a node of type <code>cls</code>.
+	 * @return The Size for <code>cls</code>.
+	 */
+	public Size getSize(Class<?> cls){
+		return size.getValue(cls);
 	}
 	
+	/**
+	 * Sets the Size for all nodes.
+	 * @param size The Size to be set.
+	 */
 	public void setSize(Size size) {
 		this.setSize(null, size);
+		this.notify(REPOSITION);
 	}
 
+	/**
+	 * Sets the Size for a node of type <code>cls</code>.
+	 * @param cls class for which the property to be set.
+	 * @param size The Size to be set. <code>null</code> will unset the size.
+	 */
 	public void setSize(Class<?> cls, Size size) {
 		this.size.setValue(cls, size);
 		this.notify(REPOSITION);
 	}
 
-	public void unsetSize(Class<?> cls) {
-		this.size.setValue(cls, null);
-		this.notify(REPOSITION);
-	}
-	
-//	public int getWidth(Node node){
-//		Size size = this.getSize(node.getModelClass());
-//		Label label = node.getLabel(this);
-//		int width = size.getWidth(this.hasVerticalOrientation(), this.hasPointerBoxes(node), label.getDimension());
-//		return width;		
-//	}
-//
-//	public int getHeight(Node node){
-//		Size size = this.getSize(node.getModelClass());	
-//		Label label = node.getLabel(this);
-//		int height = size.getHeight(this.hasVerticalOrientation(), this.hasPointerBoxes(node), label.getDimension());
-//		return height;		
-//	}
-	
 	///// Node-Layout ////////////////////////////////////
 	
+	/**
+	 * Checks if the tree has a visible root pointer.
+	 * @return true, if the tree has a visible root pointer.
+	 */
 	public boolean hasRootPointer() {
-		return rootPointer;
+		return rootLabel != null;
 	}
 
-	public void setRootPointer(boolean rootPointer) {
-		this.rootPointer = rootPointer;
+	/**
+	 * Sets the root label to be displayed. 
+	 * <code>null</code> will unset the root pointer.
+	 * @param rootLabel
+	 */
+	public void setRootPointer(String rootLabel) {
+		this.rootLabel = rootLabel;
 		this.notify(REALIGN);
 	}
 	
+	/**
+	 * Standard getter.
+	 * @return The root label of the tree.
+	 */
+	public String getRootLabel(){
+		return rootLabel;
+	}
+	
+	/**
+	 * Checks if all nodes have pointer boxes.
+	 * @return true, if nodes should be displayed with pointer boxes.
+	 */
 	public boolean hasPointerBoxes() {
 		return pointerBoxes.getValue();
 	}
 
-	public boolean hasPointerBoxes(Object obj) {
-		return pointerBoxes.getValue(obj);
+	/**
+	 * Checks if nodes of type <code>cls</code> have pointer boxes.
+	 * @param cls class for which the property to be checked.
+	 * @return true, if nodes should be displayed with pointer boxes.
+	 */
+	public boolean hasPointerBoxes(Class<?> cls) {
+		return pointerBoxes.getValue(cls);
 	}
 
+	/**
+	 * Sets the pointer boxes for all nodes. If true, nodes will be drawn
+	 * with a small box enclosing the edge origin.
+	 * @param pointerBoxes The pointer box attribute to be set.
+	 */
 	public void setPointerBoxes(boolean pointerBoxes) {
 		this.setPointerBoxes(null, pointerBoxes);
+		this.notify(REPOSITION);
 	}
 
+	/**
+	 * Sets the pointer boxes for of type <code>cls</code>. 
+	 * If true, nodes will be drawn
+	 * with a small box enclosing the edge origin.
+	 * @param cls class for which the property to be set.
+	 * @param pointerBoxes The pointer box attribute to be set.
+	 */
 	public void setPointerBoxes(Class<?> cls, boolean pointerBoxes) {
 		this.pointerBoxes.setValue(cls, pointerBoxes);
-		this.notify(REPAINT);
+		this.notify(REPOSITION);
 	}
 
+	/**
+	 * Returns the drawing shape of all nodes.
+	 * @return the drawing shape of all nodes.
+	 */
 	public Shape getShape() {
 		return shape.getValue();
 	}
 
-	public Shape getShape(Object obj) {
-		return shape.getValue(obj);
+	/**
+	 * Returns the drawing shape of nodes of type <code>cls</code>.
+	 * @param cls class for which the property to be returned.
+	 * @return the node shape.
+	 */
+	public Shape getShape(Class<?> cls) {
+		return shape.getValue(cls);
 	}
 
+	/**
+	 * Sets the shape of all nodes.
+	 * @param shape The shape to be set.
+	 */
 	public void setShape(Shape shape) {
 		this.setShape(null, shape);
+		this.notify(REPAINT);
 	}
 	
+	/**
+	 * Sets the shape of nodes of type <code>cls</code>.
+	 * @param cls class for which the property to be set.
+	 * @param shape The shape to be set.
+	 */
 	public void setShape(Class<?> cls, Shape shape) {
 		this.shape.setValue(cls, shape);
 		this.notify(REPAINT);
 	}
-	
+
 }

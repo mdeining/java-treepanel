@@ -10,6 +10,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Area;
@@ -30,6 +32,23 @@ import trees.layout.Node;
 import trees.panel.style.Shape;
 import trees.panel.style.Style;
 
+/**
+ * A Swing component for displaying recursive tree structures. The placement
+ * is calculated with the help of <i>Walker JQ II. A node-positioning algorithm 
+ * for general trees. Software—Practice and Experience 1990; 20(7):685–705.</i><p>
+ * The usage is straight-forward: You have to supply a Style-object for the panel 
+ * first. Then you can hand over the root of a tree (which has to be of the type of
+ * the generic parameter T). The node is analyzed for recursive elements and
+ * displayed. For a more fine-grained control over these elements the annotations
+ * Nodes and Ignore are available.
+ * 
+ * @see trees.panel.style.Style
+ * 
+ * @author Marcus Deininger
+ * @version 1.1
+ *
+ * @param <T> The type of the recursive structure.
+ */
 @SuppressWarnings("serial")
 public class TreePanel<T> extends JPanel implements Observer{
 	
@@ -44,31 +63,68 @@ public class TreePanel<T> extends JPanel implements Observer{
 	private Map<Object, Color> nodeColors = new HashMap<>();
 	private Map<Object, Color> subtreeColors = new HashMap<>();
 	
+	private Map<Rectangle, Node> placements = new HashMap<>();
+	
+	/**
+	 * NodeSelector objects will notify about a mouse-selection of
+	 * a displayed node. This class should only be used for checking
+	 * the notification-source in a update method.
+	 */
+	public class NodeSelector extends Observable{		
+		protected void newSelection(Object object){
+			this.setChanged();
+			this.notifyObservers(object);
+			this.clearChanged();
+		}		
+	}
+	
+	private NodeSelector selector;
+	
+	/**
+	 * Constructor for initializing the tree panel with a style and a tree.
+	 * @param style Describes the layout parameters of the tree.
+	 * @param tree The root of the tree to be displayed.
+	 */
 	public TreePanel(Style style, T tree) {
 		super();
 		if(style == null)
 			this.style = new Style();
 		else
 			this.style = style;
+		
 		this.style.addObserver(this);
 		this.offset = new PanelOffset<T>(this);
 		this.root = null;
 		this.setBackground(Color.WHITE);
 		this.addUpdateListener();
+		this.addSelectionListener();
 		this.setTree(tree);
 	}
 
+	/**
+	 * Constructor for initializing the tree panel with a tree.
+	 * This will give rather unwanted results as there is no style.
+	 * @param tree The root of the tree to be displayed.
+	 */
 	public TreePanel(T tree) {
 		this(null, tree);
 	}
 
+	/**
+	 * Constructor for initializing the tree panel with a style.
+	 * @param style Describes the layout parameters of the tree.
+	 */
 	public TreePanel(Style style) {
 		this(style, null);
 	}
 
+	/**
+	 * Constructor for initializing the tree panel without a style or a tree.
+	 */
 	public TreePanel() {
 		this(null, null);
 	}
+	
 	
 	private void addUpdateListener() {
 		this.addComponentListener(new ComponentAdapter(){
@@ -81,6 +137,67 @@ public class TreePanel<T> extends JPanel implements Observer{
 		});
 	}
 
+	private void addSelectionListener(){
+		this.addMouseListener(new MouseAdapter(){
+			@Override
+			public void mouseClicked(MouseEvent event) {
+				if(selector == null)
+					return;
+				int x = event.getX();
+				int y = event.getY();
+				for(Rectangle r : placements.keySet())
+					if(r.x <= x && x <= (r.x + r.width) && r.y <= y && y <= (r.y + r.height)){
+						Node selection = placements.get(r);
+						selector.newSelection(selection.getModelObject());
+						return;
+					}
+				selector.newSelection(null);
+			}
+		});
+	}
+	
+	/**
+	 * Adds an observer to the set of observers for this object, 
+	 * provided that it is not the same as some observer already in the set. 
+	 * The order in which notifications will be delivered to multiple 
+	 * observers is not specified. Observers will be notified about a 
+	 * mouse-(de)selected node. They will receive as an argument the
+	 * selected node or null.
+	 * 
+	 * @param observer - an observer to be added.
+	 */
+	public void addObserver(Observer observer){
+		if(selector == null)
+			selector = new NodeSelector();
+		selector.addObserver(observer);
+	}
+	
+	/**
+	 * Deletes an observer from the set of observers of this object. 
+	 * Passing null to this method will have no effect.
+	 * @param observer - the observer to be deleted.
+	 */
+	public void deleteObserver(Observer observer){
+		selector.deleteObserver(observer);
+		if(selector.countObservers() == 0)
+			selector = null;
+	}
+	
+	/**
+	 * Clears the observer list so that this object no longer has any observers.
+	 */
+	public void deleteObservers(){
+		selector.deleteObservers();
+		selector = null;
+	}
+
+	/**
+	 * Sets a new tree to  be displayed. Handed over is the root-node
+	 * of the tree. This node is analyzed for recursive elements and
+	 * displayed. For a more fine-grained control over these elements 
+	 * the annotations Nodes and Ignore are available.
+	 * @param tree - The root node of the tree to be displayed.
+	 */
 	public void setTree(T tree){
 		this.tree = tree;
 		this.root = builder.build(tree, this.style);
@@ -89,19 +206,36 @@ public class TreePanel<T> extends JPanel implements Observer{
 		this.repaint();
 	}
 	
+	/**
+	 * Standard getter.
+	 * @return The root of the displayed tree.
+	 */
 	public T getTree(){
 		return tree;		
 	}
 	
+	/**
+	 * Clears the currently displayed tree. This is equivalent
+	 * to treePanel.setTree(null).
+	 */
 	public void clear() {
 		root = null;
 		this.repaint();
 	}
 
+	/**
+	 * Standard getter.
+	 * @return The current displaying style.
+	 */
 	public Style getStyle() {
 		return style;
 	}
 
+	/**
+	 * Sets a new Style for displaying a tree.
+	 * The tree is rebuild according to this new style.
+	 * @param style - The style to be set.
+	 */
 	public void setStyle(Style style) {
 		style.deleteObservers();
 		this.style.deleteObservers();
@@ -111,35 +245,59 @@ public class TreePanel<T> extends JPanel implements Observer{
 		this.repaint();
 	}
 	
+	/**
+	 * Colors the supplied nodes.
+	 * @param color - The color to be used.
+	 * @param nodes - The nodes to be colored.
+	 */
 	public void setNodeColor(Color color, Object ... nodes){
 		for(Object node : nodes)
 			nodeColors.put(node, color);
 		this.repaint();
 	}
 	
+	/**
+	 * Removes the color from the supplied nodes.
+	 * @param nodes - The nodes to be uncolored.
+	 */
 	public void removeNodeColor(Object ... nodes){
 		for(Object node : nodes)
 			nodeColors.remove(node);
 		this.repaint();
 	}
 	
+	/**
+	 * Removes all node coloring.
+	 */
 	public void clearNodeColor(){
 		nodeColors.clear();
 		this.repaint();
 	}
 	
+	/**
+	 * Colors the supplied nodes and their children.
+	 * @param color - The color to be used.
+	 * @param nodes - The subtrees to be colored.
+	 */
 	public void setSubtreeColor(Color color, Object ... nodes){
 		for(Object node : nodes)
 			subtreeColors.put(node, color);
 		this.repaint();
 	}
 	
+	/**
+	 * Removes the color from the supplied nodes and children.
+	 * @param nodes - The subtrees to be uncolored.
+	 */
 	public void removeSubtreeColor(Object ... nodes){
 		for(Object node : nodes)
 			subtreeColors.remove(node);
 		this.repaint();
 	}
 	
+	/**
+	 * Removes all subtree coloring.
+	 */
 	public void clearSubtreeColor(){
 		subtreeColors.clear();
 		this.repaint();
@@ -193,14 +351,17 @@ public class TreePanel<T> extends JPanel implements Observer{
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
-		drawRootPointer(g, root);
-		if(root == null)
+		if(root == null){
+			drawRootPointer(g, root);
 			return;
-		
+		}
+				
+		placements.clear();		
 		if(externalRepaint)
 			rebuild();
 		
 		externalRepaint = true;
+		drawRootPointer(g, root);
 		
 		Font font = this.getFont();
 		Color color = this.getForeground();
@@ -224,7 +385,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 		if(root != null)
 			r = root.getNodeArea(offset);
 		else
-			r = new Rectangle(offset.width, offset.height, fm.stringWidth(Style.ROOT), fm.getHeight());
+			r = new Rectangle(offset.width, offset.height, fm.stringWidth(style.getRootLabel()), fm.getHeight());
 		
 		int x1 = 0, x2 = 0, y1 = 0, y2 = 0;
 		final int arrow = Style.ROOT_ARROW_LENGTH;
@@ -248,32 +409,33 @@ public class TreePanel<T> extends JPanel implements Observer{
 	}
 	
 	private void drawRootPointerText(Graphics g, int x1, int y1, int x2, int y2) {
+		String rootLabel = style.getRootLabel();
 		g.setFont(style.getFont());
 		FontMetrics fm = style.getFontMetrics();
-		final int rootWidth = fm.stringWidth(Style.ROOT), nullWidth = fm.stringWidth(Style.NULL);
+		final int rootWidth = fm.stringWidth(rootLabel), nullWidth = fm.stringWidth(Style.NULL);
 		final int ascent = fm.getAscent(), descent = fm.getDescent();
 		
-		Dimension rootDim = this.getStringBounds(g, Style.ROOT);
+		Dimension rootDim = this.getStringBounds(g, rootLabel);
 		final int height = rootDim.height;
 		
 		switch(style.getOrientation()){
 			case NORTH:
-				g.drawString(Style.ROOT, x1 - rootWidth / 2, y1 - 1);
+				g.drawString(rootLabel, x1 - rootWidth / 2, y1 - 1);
 				if(root == null)
 					g.drawString(Style.NULL, x1 - nullWidth / 2, y2 + ascent);
 				break;
 			case SOUTH:
-				g.drawString(Style.ROOT, x1 - rootWidth / 2, y1 + ascent + 1);
+				g.drawString(rootLabel, x1 - rootWidth / 2, y1 + ascent + 1);
 				if(root == null) 
 					g.drawString(Style.NULL, x1 - nullWidth / 2, y2 - descent);
 				break;
 			case EAST:
-				g.drawString(Style.ROOT, x1 - rootWidth - 1, y1 + height / 2);
+				g.drawString(rootLabel, x1 - rootWidth - 1, y1 + height / 2);
 				if(root == null) 
 					g.drawString(Style.NULL, x2, y1 + height / 2);
 				break;
 			case WEST:
-				g.drawString(Style.ROOT, x1 + 1, y1 + height / 2);
+				g.drawString(rootLabel, x1 + 1, y1 + height / 2);
 				if(root == null) 
 					g.drawString(Style.NULL, x2 - rootWidth, y1 + height / 2);
 				break;
@@ -287,7 +449,6 @@ public class TreePanel<T> extends JPanel implements Observer{
         Rectangle r = gv.getPixelBounds(null, 0, 0);
         return new Dimension(r.width, r.height);
     }
-
 
 	private void drawRootPointerArrow(Graphics g, int x1, int y1, int x2, int y2) {
 		g.drawLine(x1, y1, x2, y2);
@@ -328,8 +489,8 @@ public class TreePanel<T> extends JPanel implements Observer{
 			return;
 		
 		Color currentColor = g.getColor(); // Save current color
-		Color nColor = node.selectColor(nodeColors);
-		Color sColor = node.selectColor(subtreeColors);
+		Color nColor = nodeColors.get(node.getModelObject());
+		Color sColor = subtreeColors.get(node.getModelObject());
 		
 		if(sColor != null)
 			g.setColor(sColor);
@@ -337,7 +498,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 		
 		int slots = node.getChildrenSlots(), pos = 0;
 		for(Node child : node){
-			drawEdge(g, node, child, pos++, slots);
+			drawEdge(g, node, child, pos++, slots, level);
 			drawTree(g, child, level + 1);
 		}
 		if(sColor != null)
@@ -354,7 +515,10 @@ public class TreePanel<T> extends JPanel implements Observer{
 		Rectangle r = node.getNodeArea(offset);
 		Rectangle l = node.getLabelArea(offset);
 		
-		Shape shape = style.getShape(node);
+		if(selector != null)
+			placements.put(r, node);
+		
+		Shape shape = style.getShape(node.getModelClass());
 		switch(shape){
 			case RECTANGLE:
 				if(node.isDuplicate()){
@@ -382,9 +546,8 @@ public class TreePanel<T> extends JPanel implements Observer{
 			g.setColor(currentColor);
 	}
 
-	private void drawPointerBoxes(Graphics g, Node node, Shape shape, int x, int y,
-			int w, int h) {
-		if(style.hasPointerBoxes()){
+	private void drawPointerBoxes(Graphics g, Node node, Shape shape, int x, int y, int w, int h) {
+		if(style.hasPointerBoxes(node.getModelClass())){
 			int boxes = node.getChildrenSlots();
 			if(boxes == 0)
 				return;
@@ -456,7 +619,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 	}
 
 	private void drawLabel(Graphics g, Node node, int x, int y, int w, int h) {
-		g.setFont(style.getFont(node));
+		g.setFont(style.getFont(node.getModelClass()));
 		
 		FontMetrics metrics = g.getFontMetrics();
 		Dimension label = node.getLabelSize();
@@ -473,8 +636,8 @@ public class TreePanel<T> extends JPanel implements Observer{
 		
 	////////////// Edges ///////////////
 
-	private void drawEdge(Graphics g, Node from, Node to, int pos, int slots){			
-		if(to == null || to.isPlaceHolder())
+	private void drawEdge(Graphics g, Node from, Node to, int pos, int slots, int level){			
+		if(level >= style.getMaxDepth() || to == null || to.isPlaceHolder())
 			return;
 
 		int x = from.getX();
@@ -493,7 +656,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 			case NORTH:
 				xs = x + (w + 2*pos*w)/(2*slots);
 				ys = y + h;
-				if(style.hasPointerBoxes(from))
+				if(style.hasPointerBoxes(from.getModelClass()))
 					ys = ys - Style.POINTER_BOX_HEIGHT / 2;
 				xe = xc + wc / 2;
 				if((x + w/2) == xe && xs >= xc && xs <= xc + wc) // would have been orthogonal if centered
@@ -503,7 +666,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 			case SOUTH:
 				xs = x + (w + 2*pos*w)/(2*slots);
 				ys = y;
-				if(style.hasPointerBoxes(from))
+				if(style.hasPointerBoxes(from.getModelClass()))
 					ys = ys + Style.POINTER_BOX_HEIGHT / 2;
 				xe = xc + wc/2;
 				if((x + w/2) == xe && xs >= xc && xs <= xc + wc) // would have been orthogonal if centered
@@ -512,7 +675,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 				break;
 			case EAST:
 				xs = x + w;
-				if(style.hasPointerBoxes(from))
+				if(style.hasPointerBoxes(from.getModelClass()))
 					xs = xs - Style.POINTER_BOX_HEIGHT / 2;
 				ys = y + (h + 2*pos*h)/(2*slots);
 				xe = xc;
@@ -522,7 +685,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 				break;
 			case WEST:
 				xs = x;
-				if(style.hasPointerBoxes(from))
+				if(style.hasPointerBoxes(from.getModelClass()))
 					xs = xs + Style.POINTER_BOX_HEIGHT / 2;
 				ys = y + (h + 2*pos*h)/(2*slots);
 				xe = xc + wc;
@@ -536,5 +699,6 @@ public class TreePanel<T> extends JPanel implements Observer{
 		int yOff = offset.height;
 		g.drawLine(xs + xOff, ys + yOff, xe + xOff, ye + yOff);
 	}
+
 
 }

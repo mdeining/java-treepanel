@@ -6,6 +6,17 @@ import java.util.Map;
 import trees.panel.style.Style;
 import static trees.layout.Action.*;
 
+/**
+ * Internal core class for analyzing a given tree. Only to be used 
+ * within the <code>{@link trees.panel.TreePanel TreePanel}</code>. 
+ * This is basically an implementation of
+ * <i>Walker JQ II. A node-positioning algorithm for general trees. 
+ * Software-Practice and Experience 1990; 20(7):685-705.</i> with some
+ * adaption for Java.
+ * 
+ * @author Marcus Deininger
+ *
+ */
 public class LayoutAlgorithm {
 	
 	private Style style;
@@ -18,10 +29,25 @@ public class LayoutAlgorithm {
 	// A list of previous nodes at each level.
 	private Map<Integer, Node> previousNodes = new HashMap<>();
 	
+	/**
+	 * Executes a full positioning algorithm on the given tree.
+	 * @param style - The style for displaying. This contains information about
+	 *   element separation, orientation, font, etc.
+	 * @param root - The root of the tree to be displayed.
+	 * @return Returns true if the positioning succeeded.
+	 */
 	public boolean positionTree (Style style, Node root){
 		return this.positionTree(style, root, REPOSITION);
 	}
 	
+	/**
+	 * Executes a recalculation on the given tree. This can be done
+	 * when only the orientation of the tree has changed.
+	 * @param style - The style for displaying. This contains information about
+	 *   element separation, orientation, font, etc.
+	 * @param root - The root of the tree to be displayed.
+	 * @return Returns true if the positioning succeeded.
+	 */
 	public boolean recalculateTree (Style style, Node root){
 		return this.positionTree(style, root, RECALCULATE);
 	}
@@ -92,9 +118,7 @@ public class LayoutAlgorithm {
 				// the preliminary x-coordinate of the left sibling,
 				// the separation between sibling nodes, and
 				// the mean size of left sibling and current node.
-				node.prelim = node.getLeftSibling().prelim + style.getSiblingSeparation() + 
-//					node.getLeftSibling().getWidth(style); // ?????
-					meanNodeSize(node.getLeftSibling(), node);
+				node.prelim = node.getLeftSibling().prelim + node.getLeftSibling().getSize() + style.getSiblingSeparation();
 			else // No sibling on the left to worry about.
 				node.prelim = 0;
 		}else{
@@ -107,10 +131,9 @@ public class LayoutAlgorithm {
 				rightmost = rightmost.getRightSibling();
 				preliminaryPositioning(rightmost, level + 1);
 			}
-			int midpoint = (leftmost.prelim + rightmost.prelim) / 2;
+			int midpoint = (leftmost.prelim + rightmost.prelim + rightmost.getSize() - node.getSize()) / 2;
 			if (node.hasLeftSibling()){
-				node.prelim = node.getLeftSibling().prelim + style.getSiblingSeparation() + 
-						meanNodeSize(node.getLeftSibling(), node); 
+				node.prelim = node.getLeftSibling().prelim + node.getLeftSibling().getSize() + style.getSiblingSeparation();
 				node.modifier = node.prelim - midpoint; 
 				apportion(node, level);
 			} else
@@ -140,7 +163,7 @@ public class LayoutAlgorithm {
 			// Find the moveDistance, and apply it to node's subtree.
 			// Add appropriate portions to smaller interior subtrees.
 			int moveDistance = (neighbor.prelim + leftModsum) 
-								  + style.getSubtreeSeparation() + meanNodeSize(leftmost, neighbor)
+								  + style.getSubtreeSeparation() + neighbor.getSize()
 								  - (leftmost.prelim + rightModsum);
 			if (moveDistance > 0){
 				
@@ -201,43 +224,6 @@ public class LayoutAlgorithm {
 			}
 			return leftmost;
 		}
-	}
-
-	private int meanNodeSize(Node leftNode, Node rightNode) {
-		int nodeSize = 0;
-
-		//Calculate only for leftNode
-		switch(style.getOrientation()){
-			case NORTH: case SOUTH:
-				nodeSize = leftNode.getWidth();
-//				if(leftNode != null)
-//					nodeSize = nodeSize + leftNode.getRightSize(style);
-//				if(rightNode != null)
-//					nodeSize = nodeSize + rightNode.getLeftSize(style);
-				break;
-			case EAST: case WEST:
-				nodeSize = leftNode.getHeight();
-//				if(leftNode != null)
-//					nodeSize = nodeSize + leftNode.getTopSize(style);
-//				if(rightNode != null)
-//					nodeSize = nodeSize + rightNode.getBottomSize(style);
-				break;
-		}
-//		switch(style.getOrientation()){
-//			case NORTH: case SOUTH:
-//				if(leftNode != null)
-//					nodeSize = nodeSize + leftNode.getRightSize(style);
-//				if(rightNode != null)
-//					nodeSize = nodeSize + rightNode.getLeftSize(style);
-//				break;
-//			case EAST: case WEST:
-//				if(leftNode != null)
-//					nodeSize = nodeSize + leftNode.getTopSize(style);
-//				if(rightNode != null)
-//					nodeSize = nodeSize + rightNode.getBottomSize(style);
-//				break;
-//		}
-		return nodeSize;
 	}
 
 	private boolean finalPositioning(Node node, int level, int modsum) {

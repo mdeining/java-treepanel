@@ -7,17 +7,33 @@ import java.awt.Rectangle;
 import trees.layout.Node;
 import trees.panel.style.Style;
 
+/**
+ * Helper class for calculating and storing the offset of the displayed tree.
+ * The offset is calculated with respect to the panel's current orientation
+ * and alignment.
+ * 
+ * @author Marcus Deininger
+ *
+ */
 @SuppressWarnings("serial")
 public class PanelOffset<T> extends Dimension{
 	
 	private TreePanel<T> treePanel;
 	
+	/**
+	 * Initializes the offset with the referring panel.
+	 * @param treePanel - The panel for which the offset should be calculated.
+	 */
 	protected PanelOffset(TreePanel<T> treePanel) {
 		this.treePanel = treePanel;
 		this.width = 0;
 		this.height = 0;
 	}
 
+	/**
+	 * Calculated the current offset with respect to the panel's 
+	 * current orientation and alignment.
+	 */
 	protected void set(){
 		Style style = treePanel.getStyle();
 		Node root = treePanel.getRoot();
@@ -25,33 +41,36 @@ public class PanelOffset<T> extends Dimension{
 		if(root == null && !style.hasRootPointer())
 			return;
 		
-		FontMetrics fm = style.getFontMetrics();
-		final int margin = Style.TREE_MARGIN;
-		final int arrow =  Style.ROOT_ARROW_LENGTH;
-		final int rootWidth = fm.stringWidth(Style.ROOT);
-		final int ascent = fm.getAscent();
-		
+		int margin = Style.TREE_MARGIN;
+		int rootArrow = 0, rootWidth = 0, rootHeight = 0, rootAscent = 0;		
+		if(style.hasRootPointer()){
+			FontMetrics fm = style.getFontMetrics();
+			rootArrow =  Style.ROOT_ARROW_LENGTH;
+			rootWidth = fm.stringWidth(style.getRootLabel());
+			rootHeight = fm.getHeight();
+			rootAscent = fm.getAscent();
+		}
+
 		Rectangle rootArea, treeArea;
 		if(root != null){
 			rootArea = root.getNodeArea();
 			treeArea = root.getTreeArea(style);
 		}else{
 			rootArea = new Rectangle();
-			treeArea = new Rectangle(0, 0, fm.stringWidth(Style.ROOT), fm.getHeight());
+			treeArea = new Rectangle(0, 0, rootWidth, rootHeight);
 		}
 		
 		int top = 0, bottom = 0, left = 0, right = 0;
-		if(style.hasRootPointer())
-			switch(style.getOrientation()){
-				case NORTH: // Root is at the top
-					top = arrow + ascent; break;
-				case SOUTH: // Root is at the bottom
-					bottom = arrow + ascent; break;
-				case EAST: // Root is at the left
-					left = rootWidth + arrow; break;
-				case WEST: // Root is at the right	
-					right = rootWidth + arrow; break;
-			}		
+		switch(style.getOrientation()){
+			case NORTH: // Root is at the top
+				top = rootArrow + rootAscent; break;
+			case SOUTH: // Root is at the bottom
+				bottom = rootArrow + rootAscent; break;
+			case EAST: // Root is at the left
+				left = rootWidth + rootArrow; break;
+			case WEST: // Root is at the right	
+				right = rootWidth + rootArrow; break;
+		}		
 		
 		int panelWidth = treePanel.getWidth();
 		int panelHeight = treePanel.getHeight();

@@ -12,14 +12,7 @@ public class Value<T>{
 		return value;
 	}
 	
-	public T getValue(Object object) {
-		if(object == null)
-			return value;
-		Class<?> cls = null;
-		if(object instanceof Class)
-			cls = (Class<?>)object;
-		else
-			cls = object.getClass();
+	public T getValue(Class<?> cls) {
 		T value = values.get(cls);
 		if(value != null)
 			return value;
