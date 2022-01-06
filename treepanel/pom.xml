@@ -5,7 +5,7 @@
 
 	<groupId>mde</groupId>
 	<artifactId>org.treepanel</artifactId>
-	<version>1.1</version>
+	<version>1.1.1</version>
 	<name>Java-Treepanel-Widget</name>
 	<description>A Swing widget for easily displaying trees based on 
 		Walker, John Q. II. A Node-Positioning Algorithm for 
@@ -19,11 +19,21 @@
 	</properties>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/main/java</directory>
+			</resource>
+		</resources>
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
+
 				<configuration>
 					<release>7</release>
 				</configuration>
@@ -33,14 +43,14 @@
 	</build>
 
 	<dependencies>
-	
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 	</dependencies>
 
 </project>

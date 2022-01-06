@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="1" failures="0" name="trees.test.TestLayoutAlgorithm" time="0.444" errors="0" skipped="0">
+<testsuite tests="1" failures="0" name="trees.test.TestLayoutAlgorithm" time="0.468" errors="0" skipped="0">
   <properties>
     <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
     <property name="java.vm.version" value="11+28"/>
@@ -26,7 +26,7 @@
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="user.variant" value=""/>
     <property name="os.name" value="Windows 10"/>
-    <property name="classworlds.conf" value="D:\Arbeitsbereich\Projekte\public\workspace\.metadata\.plugins\org.eclipse.m2e.launching\launches\m2conf6106665742516813900.tmp"/>
+    <property name="classworlds.conf" value="D:\Arbeitsbereich\Projekte\public\workspace\.metadata\.plugins\org.eclipse.m2e.launching\launches\m2conf6679538525018637045.tmp"/>
     <property name="sun.jnu.encoding" value="Cp1252"/>
     <property name="java.library.path" value="C:\Program Files\Java\jdk-11+28\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:/Program Files/Java/eclipse-jee-4.20/eclipse//plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_16.0.1.v20210528-1205/jre/bin/server;C:/Program Files/Java/eclipse-jee-4.20/eclipse//plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_16.0.1.v20210528-1205/jre/bin;C:\Program Files (x86)\GtkSharp\2.12\\bin;C:\Program Files\Entwicklung\Python3\Scripts\;C:\Program Files\Entwicklung\Python3\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Intel\WiFi\bin\;C:\Program Files\Common Files\Intel\WirelessCommon\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Program Files (x86)\Lenovo\Access Connections\;C:\Program Files\Multimedia\FFmpeg\bin;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files (x86)\Windows Kits\10\Microsoft Application Virtualization\Sequencer\;C:\Program Files\Git\cmd;C:\Program Files\Docker\Docker\resources\bin;C:\ProgramData\DockerDesktop\version-bin;C:\Program Files\Entwicklung\Microsoft VS Code\bin;C:\Users\installer\AppData\Local\Microsoft\WindowsApps;C:\Program Files\IBM\Cloud\bin;C:\Program Files\Entwicklung\heroku\bin;C:\Program Files\Kommunikation\PuTTY\;C:\Users\deininger\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Java\jdk-11+28\bin;;D:\Arbeitsbereich\Projekte\public;;."/>
     <property name="jdk.debug" value="release"/>
@@ -61,5 +61,5 @@
     <property name="sun.desktop" value="windows"/>
     <property name="sun.cpu.isalist" value="amd64"/>
   </properties>
-  <testcase classname="trees.test.TestLayoutAlgorithm" name="test1" time="0.444"/>
+  <testcase classname="trees.test.TestLayoutAlgorithm" name="test1" time="0.468"/>
 </testsuite>
