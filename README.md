@@ -19,7 +19,7 @@ In the lecture "Algorithms and Data Structures" the following variants are prese
 
 - 2-3-Trees (introduced by John Hopcroft in 1970, see (Aho, et al., 1983)): Trees with two to three successor nodes and with paths of equal length to a data node from the root. The 2-3 trees represent a special case of the B-trees (Bayer, et al., 1972). The B-trees are a basis for the organization of data in computer science (e.g. file systems or databases). They are not discussed further in the lecture, but the transfer from the 2-3 tree is straightforward. (The name "B-tree" is not clear; it may stand for "balanced" or for "Bayer", (Comer, 1979)).
 
-For the presentation in the lecture and for the exercises to the lecture the trees should be visualized. While the visualization can be done manually with paper and pencil (for small trees) comparatively easy, the automatic visualization is difficult. (Rusu, 2014) gives an overview of possible approaches. Classically, mathematics aims at a plane-based representation, where the nodes of a plane all have the same distance from
+For the presentation in the lecture and for the exercises to the lecture the trees should be visualized. While the visualization can be done manually with paper and pencil (for small trees) comparatively easy, the automatic visualization is difficult. (Rusu, 2014) gives an overview of possible approaches. Classically, mathematics aims at a level-based representation, where the nodes of a level all have the same distance from
 of the root and nodes of a lower level are below the nodes of a higher level.
 
 Fig. 2 shows a naive implementation based on
@@ -53,16 +53,16 @@ The tree panel component is available as a jar file with sources, javadoc, JUnit
 
 ### Introduction
 
-The TreePanel component is a subclass of the JPanel and thus can be
-like any other Swing components into a graphical
+The TreePanel component is a subclass of the JPanel and thus can be used
+like any other Swing component within a graphical
 user interface. The component requires two
 Parameters:
 
 - An object of the Style type. This object contains the configuration for display, such as spacing of layers, spacing of nodes of a layer, node size, etc. (see below)
 
 - Any object. This object is used as the root of a
-Tree structure interpreted. The object is created according to recursive
-elements are searched. The root with its recursive elements
+Tree structure . The object is csearched for recursive
+elements. The root with its recursive elements
 is displayed according to the style. The root object can be a POJO
 and does not need to provide any special elements. Additionally
 recursive elements can be explicitly denoted by annotations.
@@ -171,7 +171,7 @@ public class Main {
 
 Listing 3: Creating a tree and calling the display
 
-Fig. 6 shows the generated representation (see also Fig. 44 for comparison)
+Fig. 6 shows the generated representation (see also Fig. 4 for comparison)
 
 ![](media/image53.png)
 

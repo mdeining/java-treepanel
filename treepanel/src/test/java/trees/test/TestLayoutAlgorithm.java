@@ -11,8 +11,8 @@ import static org.junit.Assert.assertEquals;
 import trees.layout.LayoutAlgorithm;
 import trees.layout.ModelData;
 import trees.layout.Node;
-import trees.panel.style.Style;
-import static trees.panel.style.Size.*;
+import trees.style.Style;
+import static trees.style.Size.*;
 
 import org.junit.Before;
 import org.junit.Test;
