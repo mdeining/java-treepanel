@@ -29,10 +29,10 @@ public class ModelData {
 
 	/**
 	 * Factory method for wrapping a regular element.
-	 * @param object - The object to be wrapped.
-	 * @param cls - The class of the wrapped object.
-	 * @param label - The original label of the object.
-	 * @param style - The displaying style.
+	 * @param object The object to be wrapped.
+	 * @param cls The class of the wrapped object.
+	 * @param label The original label of the object.
+	 * @param style The displaying style.
 	 * @return an initialized regular element.
 	 */
 	public static ModelData newElement(Object object, Class<?> cls, String label, Style style){
@@ -41,10 +41,10 @@ public class ModelData {
 	
 	/**
 	 * Factory method for wrapping a duplicate element.
-	 * @param object - The object to be wrapped.
-	 * @param cls - The class of the wrapped object.
-	 * @param label - The original label of the object.
-	 * @param style - The displaying style.
+	 * @param object The object to be wrapped.
+	 * @param cls The class of the wrapped object.
+	 * @param label The original label of the object.
+	 * @param style The displaying style.
 	 * @return an initialized element, which is marked as duplicate.
 	 */
 	public static ModelData newDuplicate(Object object, Class<?> cls, String label, Style style){
@@ -55,8 +55,8 @@ public class ModelData {
 	 * Factory method for creating a placeholder element.
 	 * The placeholder is not displayed but taken into account 
 	 * for the layout.
-	 * @param cls - The class of the wrapped object.
-	 * @param style - The displaying style.
+	 * @param cls The class of the wrapped object.
+	 * @param style The displaying style.
 	 * @return an initialized element, which is marked as placeholder.
 	 */
 	public static ModelData newPlaceHolder(Class<?> cls, Style style){
@@ -138,7 +138,7 @@ public class ModelData {
 	 * given style. The label will fit into the drawing 
 	 * box of the node. If it is too large characters
 	 * or lines will be removed.
-	 * @param style
+	 * @param style Style to be aligned to
 	 */
 	public void align(Style style) {
 		FontMetrics metrics = style.getFontMetrics(cls);		

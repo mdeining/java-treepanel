@@ -404,6 +404,7 @@ public class Style extends Observable{
 	
 	/**
 	 * Gets the font metrics for a node of type <code>cls</code>.
+	 * @param cls The node class for which the metrics are returned.
 	 * @return The font metrics for <code>cls</code>.
 	 */
 	public FontMetrics getFontMetrics(Class<?> cls){
@@ -414,6 +415,7 @@ public class Style extends Observable{
 
 	/**
 	 * Gets the Size for a node of type <code>cls</code>.
+	 * @param cls The node class for which the size is returned.
 	 * @return The Size for <code>cls</code>.
 	 */
 	public Size getSize(Class<?> cls){
@@ -452,7 +454,7 @@ public class Style extends Observable{
 	/**
 	 * Sets the root label to be displayed. 
 	 * <code>null</code> will unset the root pointer.
-	 * @param rootLabel
+	 * @param rootLabel the new root label.
 	 */
 	public void setRootPointer(String rootLabel) {
 		this.rootLabel = rootLabel;

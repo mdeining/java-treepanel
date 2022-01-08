@@ -18,12 +18,15 @@ import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.geom.RoundRectangle2D.Double;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import trees.building.TreeBuilder;
 import trees.layout.Action;
@@ -35,7 +38,7 @@ import trees.style.Style;
 /**
  * A Swing component for displaying recursive tree structures. The placement
  * is calculated with the help of <i>Walker JQ II. A node-positioning algorithm 
- * for general trees. Software—Practice and Experience 1990; 20(7):685–705.</i><p>
+ * for general trees. Software-Practice and Experience 1990; 20(7):685-705.</i><p>
  * The usage is straight-forward: You have to supply a Style-object for the panel 
  * first. Then you can hand over the root of a tree (which has to be of the type of
  * the generic parameter T). The node is analyzed for recursive elements and
@@ -45,7 +48,7 @@ import trees.style.Style;
  * @see trees.style.Style
  * 
  * @author Marcus Deininger
- * @version 1.2
+ * @version 1.4 Added PreferredSize and JScrollPane
  *
  * @param <T> The type of the recursive structure.
  */
@@ -55,30 +58,102 @@ public class TreePanel<T> extends JPanel implements Observer{
 	private TreeBuilder builder = new TreeBuilder();
 	private LayoutAlgorithm layoutAlgorithm = new LayoutAlgorithm();
 	
-	private PanelOffset<T> offset;
+	private PanelOffset offset;
 	private T tree;
 	private Node root;
 	private Style style;
+	
+	private JScrollPane scrollPane = null;
 	
 	private Map<Object, Color> nodeColors = new HashMap<>();
 	private Map<Object, Color> subtreeColors = new HashMap<>();
 	
 	private Map<Rectangle, Node> placements = new HashMap<>();
 	
-	/**
-	 * NodeSelector objects will notify about a mouse-selection of
-	 * a displayed node. This class should only be used for checking
-	 * the notification-source in a update method.
-	 */
-	public class NodeSelector extends Observable{		
-		protected void newSelection(Object object){
-			this.setChanged();
-			this.notifyObservers(object);
-			this.clearChanged();
-		}		
-	}
+	private List<NodeSelectionListener<T>> nodeSelectionListeners = new ArrayList<>();
 	
-	private NodeSelector selector;
+	/**
+	 * Helper class for calculating and storing the offset of the displayed tree.
+	 * The offset is calculated with respect to the panel's current orientation
+	 * and alignment.
+	 */
+	private class PanelOffset extends Dimension{
+		
+		/**
+		 * Initializes the offset with the referring panel.
+		 * @param treePanel The panel for which the offset should be calculated.
+		 */
+		protected PanelOffset() {
+			this.width = 0;
+			this.height = 0;
+		}
+
+		/**
+		 * Calculated the current offset with respect to the panel's 
+		 * current orientation and alignment.
+		 */
+		protected void set(){
+			Style style = TreePanel.this.getStyle();
+			Node root = TreePanel.this.getRoot();
+
+			if(root == null && !style.hasRootPointer())
+				return;
+			
+			int margin = Style.TREE_MARGIN;
+			int rootArrow = 0, rootWidth = 0, rootHeight = 0, rootAscent = 0;		
+			if(style.hasRootPointer()){
+				FontMetrics fm = style.getFontMetrics();
+				rootArrow =  Style.ROOT_ARROW_LENGTH;
+				rootWidth = fm.stringWidth(style.getRootLabel());
+				rootHeight = fm.getHeight();
+				rootAscent = fm.getAscent();
+			}
+
+			Rectangle rootArea, treeArea;
+			if(root != null){
+				rootArea = root.getNodeArea();
+				treeArea = root.getTreeArea(style);
+			}else{
+				rootArea = new Rectangle();
+				treeArea = new Rectangle(0, 0, rootWidth, rootHeight);
+			}
+			
+			int top = 0, bottom = 0, left = 0, right = 0;
+			switch(style.getOrientation()){
+				case NORTH: // Root is at the top
+					top = rootArrow + rootAscent; break;
+				case SOUTH: // Root is at the bottom
+					bottom = rootArrow + rootAscent; break;
+				case EAST: // Root is at the right	
+					right = rootWidth + rootArrow; break;
+				case WEST: // Root is at the left
+					left = rootWidth + rootArrow; break;
+			}		
+			
+			int panelWidth = TreePanel.this.getWidth();
+			int panelHeight = TreePanel.this.getHeight();
+
+			switch(style.getHorizontalAlignment()){
+				case LEFT:			width = margin + left; break;
+				case ROOT_CENTER:	width = (panelWidth - rootArea.width) / 2 - rootArea.x; break;
+				case TREE_CENTER:	width = (panelWidth - treeArea.width) / 2; break;
+				case RIGHT:			width = panelWidth - treeArea.width - right - margin; break;
+				default:			width = 0;
+			}
+
+			switch(style.getVerticalAlignment()){
+				case TOP:			height = top + margin; break;
+				case ROOT_CENTER:	height = (panelHeight - rootArea.height) / 2 - rootArea.y; break;
+				case TREE_CENTER:	height = (panelHeight - treeArea.height) / 2; break;
+				case BOTTOM:		height = panelHeight - treeArea.height - bottom - margin; break;
+				default:			height = 0;
+			}
+			
+			int preferredPanelWidth = treeArea.width + (width > 0 ? width : 0) + Style.TREE_MARGIN;
+			int preferredPanelHeight = treeArea.height + (height > 0 ? height : 0) + Style.TREE_MARGIN;
+			TreePanel.this.setPreferredSize(new Dimension(preferredPanelWidth, preferredPanelHeight));
+		}
+	}
 	
 	/**
 	 * Constructor for initializing the tree panel with a style and a tree.
@@ -93,11 +168,11 @@ public class TreePanel<T> extends JPanel implements Observer{
 			this.style = style;
 		
 		this.style.addObserver(this);
-		this.offset = new PanelOffset<T>(this);
+		this.offset = new PanelOffset();
 		this.root = null;
 		this.setBackground(Color.WHITE);
-		this.addUpdateListener();
-		this.addSelectionListener();
+		this.addResizeListener();
+		this.addMouseListeners();
 		this.setTree(tree);
 	}
 
@@ -117,6 +192,27 @@ public class TreePanel<T> extends JPanel implements Observer{
 	public TreePanel(Style style) {
 		this(style, null);
 	}
+	
+	
+	/**
+	 * Wraps the TreePanel in a JScrollPane. This is added for convenience use,
+	 * as a scroll pane is needed quite regularly and There seems to be an issue 
+	 * when repainting a JScrollFrame - it is not updated, only when resized; 
+	 * see for example: 
+	 * http://stackoverflow.com/questions/22513032/how-to-force-refresh-repaint-a-jscrollpane<p>
+	 * 
+	 * The proposed solution of revalidate/repaint did not work, however what did work 
+	 * is a repaint of the scrollpanes viewport; see:
+	 * https://coderanch.com/t/497713/java/JScrollPane-update
+	 * This has been implemented by overriding the Component's <code>{@link java.awt.Component#repaint() repaint}</code> method.
+	 * 
+	 * @return the created ScrollPane
+	 */
+	public JScrollPane addScrollPane(){
+		if(scrollPane == null)
+			scrollPane = new JScrollPane(this);
+		return scrollPane;		
+	}
 
 	/**
 	 * Constructor for initializing the tree panel without a style or a tree.
@@ -125,8 +221,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 		this(null, null);
 	}
 	
-	
-	private void addUpdateListener() {
+	private void addResizeListener() {
 		this.addComponentListener(new ComponentAdapter(){
 
 			@Override
@@ -137,58 +232,64 @@ public class TreePanel<T> extends JPanel implements Observer{
 		});
 	}
 
-	private void addSelectionListener(){
-		this.addMouseListener(new MouseAdapter(){
+	private void addMouseListeners(){
+		MouseAdapter ma = new MouseAdapter(){
+			
+			private boolean dragged = false;
+
 			@Override
-			public void mouseClicked(MouseEvent event) {
-				if(selector == null)
+			public void mouseDragged(MouseEvent event) {
+				dragged = true;
+			}
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public void mouseReleased(MouseEvent event) {
+				if(dragged){ // only "real" clicks
+					dragged = false;
 					return;
+				}
 				int x = event.getX();
 				int y = event.getY();
+				T selectedNode = null;
 				for(Rectangle r : placements.keySet())
 					if(r.x <= x && x <= (r.x + r.width) && r.y <= y && y <= (r.y + r.height)){
 						Node selection = placements.get(r);
-						selector.newSelection(selection.getModelObject());
-						return;
+						selectedNode = (T) selection.getModelObject();
+						break;
 					}
-				selector.newSelection(null);
+				NodeSelectionEvent<T> nodeSelectionEvent = new NodeSelectionEvent<>(TreePanel.this, selectedNode, event.isPopupTrigger(), x, y);
+				for(NodeSelectionListener<T> listener : nodeSelectionListeners)
+					listener.nodeSelected(nodeSelectionEvent);
 			}
-		});
+		};
+		this.addMouseMotionListener(ma);
+		this.addMouseListener(ma);
 	}
 	
 	/**
-	 * Adds an observer to the set of observers for this object, 
-	 * provided that it is not the same as some observer already in the set. 
-	 * The order in which notifications will be delivered to multiple 
-	 * observers is not specified. Observers will be notified about a 
-	 * mouse-(de)selected node. They will receive as an argument the
-	 * selected node or null.
+	 * Adds the specified node selection listener to receive selection events from this component. 
+	 * If the listener is null, no exception is thrown and no action is performed.
 	 * 
-	 * @param observer - an observer to be added.
+	 * @param listener the node selection listener
 	 */
-	public void addObserver(Observer observer){
-		if(selector == null)
-			selector = new NodeSelector();
-		selector.addObserver(observer);
+	public void addNodeSelectionListener(NodeSelectionListener<T> listener){
+		if(listener != null)
+			nodeSelectionListeners.add(listener);
 	}
 	
 	/**
-	 * Deletes an observer from the set of observers of this object. 
-	 * Passing null to this method will have no effect.
-	 * @param observer - the observer to be deleted.
+	 * Removes the specified node selection listener so that it no longer receives 
+	 * selection events from this component. This method performs no function, 
+	 * nor does it throw an exception, if the listener specified by the argument 
+	 * was not previously added to this component. If the listener is null, 
+	 * no exception is thrown and no action is performed. 
+	 * 
+	 * @param listener the node selection listener
 	 */
-	public void deleteObserver(Observer observer){
-		selector.deleteObserver(observer);
-		if(selector.countObservers() == 0)
-			selector = null;
-	}
-	
-	/**
-	 * Clears the observer list so that this object no longer has any observers.
-	 */
-	public void deleteObservers(){
-		selector.deleteObservers();
-		selector = null;
+	public void removeNodeSelectionListener(NodeSelectionListener<T> listener){
+		if(listener != null)
+			nodeSelectionListeners.remove(listener);
 	}
 
 	/**
@@ -196,7 +297,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 	 * of the tree. This node is analyzed for recursive elements and
 	 * displayed. For a more fine-grained control over these elements 
 	 * the annotations Nodes and Ignore are available.
-	 * @param tree - The root node of the tree to be displayed.
+	 * @param tree The root node of the tree to be displayed.
 	 */
 	public void setTree(T tree){
 		this.tree = tree;
@@ -234,7 +335,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 	/**
 	 * Sets a new Style for displaying a tree.
 	 * The tree is rebuild according to this new style.
-	 * @param style - The style to be set.
+	 * @param style The style to be set.
 	 */
 	public void setStyle(Style style) {
 		this.setStyle(style, true);
@@ -243,7 +344,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 	/**
 	 * Sets a new Style for displaying a tree.
 	 * The tree is rebuild according to this new style.
-	 * @param style - The style to be set.
+	 * @param style The style to be set.
 	 * @param deleteObservers true, if the previous observers should be deleted.
 	 */
 	public void setStyle(Style style, boolean deleteObservers) {
@@ -259,8 +360,8 @@ public class TreePanel<T> extends JPanel implements Observer{
 	
 	/**
 	 * Colors the supplied nodes.
-	 * @param color - The color to be used.
-	 * @param nodes - The nodes to be colored.
+	 * @param color The color to be used.
+	 * @param nodes The nodes to be colored.
 	 */
 	public void setNodeColor(Color color, Object ... nodes){
 		for(Object node : nodes)
@@ -269,8 +370,30 @@ public class TreePanel<T> extends JPanel implements Observer{
 	}
 	
 	/**
+	 * Replaces the nodes collored with a given color with a new color.
+	 * @param oldColor The color to be replaced.
+	 * @param newColor The color to be used instead.
+	 */
+	public void replaceNodeColor(Color oldColor, Color newColor){
+		for(Object node : nodeColors.keySet())
+			if(nodeColors.get(node) == oldColor)
+				nodeColors.put(node, newColor);
+		this.repaint();
+	}
+		
+	/**
+	 * Replaces the color of all colored nodes with a new color.
+	 * @param newColor The color to be used instead.
+	 */
+	public void replaceNodeColor(Color newColor){
+		for(Object node : nodeColors.keySet())
+			nodeColors.put(node, newColor);
+		this.repaint();
+	}
+
+	/**
 	 * Removes the color from the supplied nodes.
-	 * @param nodes - The nodes to be uncolored.
+	 * @param nodes The nodes to be uncolored.
 	 */
 	public void removeNodeColor(Object ... nodes){
 		for(Object node : nodes)
@@ -288,8 +411,8 @@ public class TreePanel<T> extends JPanel implements Observer{
 	
 	/**
 	 * Colors the supplied nodes and their children.
-	 * @param color - The color to be used.
-	 * @param nodes - The subtrees to be colored.
+	 * @param color The color to be used.
+	 * @param nodes The subtrees to be colored.
 	 */
 	public void setSubtreeColor(Color color, Object ... nodes){
 		for(Object node : nodes)
@@ -299,7 +422,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 	
 	/**
 	 * Removes the color from the supplied nodes and children.
-	 * @param nodes - The subtrees to be uncolored.
+	 * @param nodes The subtrees to be uncolored.
 	 */
 	public void removeSubtreeColor(Object ... nodes){
 		for(Object node : nodes)
@@ -314,8 +437,15 @@ public class TreePanel<T> extends JPanel implements Observer{
 		subtreeColors.clear();
 		this.repaint();
 	}
+
 	
-	
+	@Override
+	public void repaint() {
+		super.repaint();
+		if(scrollPane != null)
+			scrollPane.getViewport().revalidate();
+	}
+
 	@Override
 	public void update(Observable o, Object arg) {
 		if(o instanceof Style && arg instanceof Action){
@@ -410,10 +540,10 @@ public class TreePanel<T> extends JPanel implements Observer{
 				x1 = r.x + r.width / 2; y1 = r.y + r.height + arrow; x2 = x1; y2 = y1 - arrow;
 				break;
 			case EAST:
-				x1 = r.x - arrow; y1 = r.y + r.height / 2; x2 = r.x; y2 = y1;
+				x1 = r.x + r.width + arrow; y1 = r.y + r.height / 2; x2 = x1 - arrow; y2 = y1;
 				break;
 			case WEST:
-				x1 = r.x + r.width + arrow; y1 = r.y + r.height / 2; x2 = x1 - arrow; y2 = y1;
+				x1 = r.x - arrow; y1 = r.y + r.height / 2; x2 = r.x; y2 = y1;
 				break;
 		}
 		drawRootPointerArrow(g, x1, y1, x2, y2);
@@ -442,14 +572,14 @@ public class TreePanel<T> extends JPanel implements Observer{
 					g.drawString(Style.NULL, x1 - nullWidth / 2, y2 - descent);
 				break;
 			case EAST:
-				g.drawString(rootLabel, x1 - rootWidth - 1, y1 + height / 2);
-				if(root == null) 
-					g.drawString(Style.NULL, x2, y1 + height / 2);
-				break;
-			case WEST:
 				g.drawString(rootLabel, x1 + 1, y1 + height / 2);
 				if(root == null) 
 					g.drawString(Style.NULL, x2 - rootWidth, y1 + height / 2);
+				break;
+			case WEST:
+				g.drawString(rootLabel, x1 - rootWidth - 1, y1 + height / 2);
+				if(root == null) 
+					g.drawString(Style.NULL, x2, y1 + height / 2);
 				break;
 		}
 	}
@@ -479,13 +609,13 @@ public class TreePanel<T> extends JPanel implements Observer{
 				break;
 			case EAST:
 				p0 = new Point(x2, y2); 
-				p1 = new Point(x2 - head*2, y2 - head); 
-				p2 = new Point(x2 - head*2, y2 + head);
+				p1 = new Point(x2 + head*2, y2 - head); 
+				p2 = new Point(x2 + head*2, y2 + head);
 				break;
 			case WEST:
 				p0 = new Point(x2, y2); 
-				p1 = new Point(x2 + head*2, y2 - head); 
-				p2 = new Point(x2 + head*2, y2 + head);
+				p1 = new Point(x2 - head*2, y2 - head); 
+				p2 = new Point(x2 - head*2, y2 + head);
 				break;
 		}
 		
@@ -527,8 +657,7 @@ public class TreePanel<T> extends JPanel implements Observer{
 		Rectangle r = node.getNodeArea(offset);
 		Rectangle l = node.getLabelArea(offset);
 		
-		if(selector != null)
-			placements.put(r, node);
+		placements.put(r, node);
 		
 		Shape shape = style.getShape(node.getModelClass());
 		switch(shape){
@@ -567,8 +696,8 @@ public class TreePanel<T> extends JPanel implements Observer{
 			switch(style.getOrientation()){
 				case NORTH: y1 = y + h - b; y2 = y1 + b; x1 = x; xp = w / boxes; break;
 				case SOUTH: y1 = y + b; y2 = y1 - b; x1 = x; xp = w / boxes;  break;
-				case EAST:	x1 = x + w - b; x2 = x1 + b; y1 = y; yp = h / boxes; break;
-				case WEST:	x1 = x + b; x2 = x1 - b; y1 = y; yp = h / boxes; break;
+				case EAST:	x1 = x + b; x2 = x1 - b; y1 = y; yp = h / boxes; break;
+				case WEST:	x1 = x + w - b; x2 = x1 + b; y1 = y; yp = h / boxes; break;
 			}
 			for(int i = 0; i < boxes; i++)
 				if(style.hasVerticalOrientation()){
@@ -686,21 +815,21 @@ public class TreePanel<T> extends JPanel implements Observer{
 				ye = yc + hc;
 				break;
 			case EAST:
-				xs = x + w;
-				if(style.hasPointerBoxes(from.getModelClass()))
-					xs = xs - Style.POINTER_BOX_HEIGHT / 2;
-				ys = y + (h + 2*pos*h)/(2*slots);
-				xe = xc;
-				ye = yc + hc/2;
-				if((y + h/2) == ye && ys >= yc && ys <= yc + hc) // would have been orthogonal if centered
-					ye = ys;
-				break;
-			case WEST:
 				xs = x;
 				if(style.hasPointerBoxes(from.getModelClass()))
 					xs = xs + Style.POINTER_BOX_HEIGHT / 2;
 				ys = y + (h + 2*pos*h)/(2*slots);
 				xe = xc + wc;
+				ye = yc + hc/2;
+				if((y + h/2) == ye && ys >= yc && ys <= yc + hc) // would have been orthogonal if centered
+					ye = ys;
+				break;
+			case WEST:
+				xs = x + w;
+				if(style.hasPointerBoxes(from.getModelClass()))
+					xs = xs - Style.POINTER_BOX_HEIGHT / 2;
+				ys = y + (h + 2*pos*h)/(2*slots);
+				xe = xc;
 				ye = yc + hc/2;
 				if((y + h/2) == ye && ys >= yc && ys <= yc + hc) // would have been orthogonal if centered
 					ye = ys;
