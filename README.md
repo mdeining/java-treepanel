@@ -1,6 +1,8 @@
 
 # java-treepanel | Visualization of trees and tree algorithms
 
+This is the basic background - if you just want to use it, got to [treepanel-samples-1](https://github.com/marcus-deininger/java-treepanel-samples-1). This is a ready to use project with several samples.
+
 In the context of the lecture "Algorithms and Data Structures", trees and algorithms for trees are introduced, among other things. Trees were introduced by the English mathematician Arthur Cayley in 1857 (Cayley, 1857). From the beginning, trees are also represented graphically (Cayley, 1859).
 
 ![http://upload.wikimedia.org/wikipedia/commons/f/f7/Caylrich-first-trees2.png](./media/image48.png)
